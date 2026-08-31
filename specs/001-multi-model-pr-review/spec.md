@@ -197,6 +197,12 @@ with a specific, actionable error rather than producing any report.
   a configuration error handled under FR-011.
 - The exact diff size limit used for truncation (FR-014) is a tunable default, not a
   user-facing decision this specification fixes.
+- **MVP provider scope**: the architecture is model-agnostic (Principle I) and imposes no
+  fixed limit on providers, but the MVP itself ships working adapters for exactly four
+  providers — Anthropic (Claude), OpenAI (ChatGPT), DeepSeek, and Moonshot AI (Kimi) — chosen
+  as the providers actually needed at launch. Any other provider is explicitly out of scope
+  for the MVP and is follow-up work, added the same way (one adapter file + a registry entry)
+  without touching fan-out, aggregation, or delivery logic.
 - This repository will be public, but its license and whether it accepts external
   contributions are undecided and out of scope for this feature (tracked separately per the
   project constitution).

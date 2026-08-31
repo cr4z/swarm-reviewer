@@ -123,9 +123,10 @@ src/
 ├── providers/
 │   ├── types.ts                   # ProviderAdapter, ReviewRequest/Response, etc.
 │   ├── registry.ts
-│   ├── anthropic.ts
-│   ├── openai.ts
-│   └── google.ts
+│   ├── anthropic.ts               # Claude
+│   ├── openai.ts                  # ChatGPT
+│   ├── deepseek.ts
+│   └── kimi.ts                    # Moonshot AI
 ├── delivery/
 │   ├── types.ts                   # DeliveryChannel, DeliveryOutcome
 │   ├── registry.ts

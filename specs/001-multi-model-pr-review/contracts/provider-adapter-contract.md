@@ -67,9 +67,15 @@ key, before any network call is made.
   `"timed_out"`, and MUST NOT propagate to fail the matrix job as a whole — Principle II.
 - Credential values MUST never appear in a thrown error's message — Principle VI.
 
-## Initial adapters (v1)
+## Initial adapters (v1 / MVP scope)
 
-`anthropic`, `openai`, `google` — chosen as the three providers referenced in project
-discussion. Additional providers (`mistral`, `cohere`, self-hosted OpenAI-compatible
-endpoints, etc.) are additive follow-up work, not required for v1 (see spec Assumptions on
-scope), and each is exactly one new file plus a registry entry.
+`anthropic` (Claude), `openai` (ChatGPT), `deepseek`, `kimi` (Moonshot AI) — the four
+providers the MVP is scoped to (spec.md Assumptions). `deepseek` and `kimi` both expose
+OpenAI-compatible chat-completions APIs; each still gets its own adapter file (base URL,
+model id passthrough, and response mapping differ enough, and it keeps every provider equally
+swappable/removable per Principle VII) rather than special-casing them inside `openai.ts`.
+
+Additional providers (Google Gemini, Mistral, Cohere, self-hosted OpenAI-compatible
+endpoints, etc.) are explicitly out of MVP scope and are follow-up work, not required for v1
+— each is exactly one new file plus a registry entry, with no change to fan-out, aggregation,
+or delivery logic.
