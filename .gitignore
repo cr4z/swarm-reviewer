@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output (NOT actions/*/dist — those are committed intentionally, Principle V)
+out/
+*.tsbuildinfo
+
+# Test/coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.local
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

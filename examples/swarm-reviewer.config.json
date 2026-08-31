@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "id": "reviewer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "apiKeySecret": "ANTHROPIC_API_KEY"
+    },
+    {
+      "id": "core",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "apiKeySecret": "ANTHROPIC_AGGREGATOR_API_KEY",
+      "role": "aggregator"
+    }
+  ],
+  "delivery": {
+    "prComment": { "enabled": true },
+    "email": {
+      "enabled": true,
+      "recipients": ["you@example.com"],
+      "provider": "resend",
+      "apiKeySecret": "EMAIL_API_KEY"
+    }
+  }
+}

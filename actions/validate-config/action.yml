@@ -1,0 +1,16 @@
+name: "Swarm Reviewer - Validate Config"
+description: "Fail-fast validation of the Swarm Reviewer configuration file (FR-011)."
+inputs:
+  config_path:
+    description: "Path to the config file in the consumer repository."
+    required: false
+    default: "swarm-reviewer.config.json"
+  github_token:
+    description: "Token used to read the config file via the Contents API."
+    required: true
+outputs:
+  config_json:
+    description: "The validated configuration, as a JSON string, for downstream steps/jobs."
+runs:
+  using: "node20"
+  main: "dist/index.js"

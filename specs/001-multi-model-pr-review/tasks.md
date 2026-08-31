@@ -32,11 +32,11 @@ implementation and testing of each story.
 
 **Purpose**: Repository scaffolding, shared toolchain — no feature logic yet.
 
-- [ ] T001 Create the directory structure from plan.md's Project Structure (`.github/workflows/`, `actions/{validate-config,run-agent,aggregate,deliver}/`, `src/{config,providers,delivery,lib}/`, `tests/{unit,fixtures}/`, `examples/`)
-- [ ] T002 Initialize `package.json` and `tsconfig.json` at repo root: TypeScript 5.x, Node 20 target, dependencies `@actions/core`, `@actions/github`, `ajv`; devDependencies `esbuild`, `vitest`, `typescript`
-- [ ] T003 Add `.github/workflows/ci.yml` for this repository's own CI: run `npm run build`, `npm test`, and `actionlint` against `.github/workflows/**` and `actions/*/action.yml` on every push/PR (constitution Development Workflow gate)
-- [ ] T004 [P] Add `package.json` scripts: `build` (esbuild-bundles each of the 4 actions' `src` entry to its own `dist/index.js`), `test` (vitest run), `lint` (actionlint)
-- [ ] T005 [P] Add `examples/swarm-reviewer.config.json` as a starter config matching `contracts/config.schema.json` (one aggregator + one reviewer, both provider `"anthropic"`, to keep Setup buildable before other adapters exist)
+- [X] T001 Create the directory structure from plan.md's Project Structure (`.github/workflows/`, `actions/{validate-config,run-agent,aggregate,deliver}/`, `src/{config,providers,delivery,lib}/`, `tests/{unit,fixtures}/`, `examples/`)
+- [X] T002 Initialize `package.json` and `tsconfig.json` at repo root: TypeScript 5.x, Node 20 target, dependencies `@actions/core`, `@actions/github`, `ajv`; devDependencies `esbuild`, `vitest`, `typescript`
+- [X] T003 Add `.github/workflows/ci.yml` for this repository's own CI: run `npm run build`, `npm test`, and `actionlint` against `.github/workflows/**` and `actions/*/action.yml` on every push/PR (constitution Development Workflow gate)
+- [X] T004 [P] Add `package.json` scripts: `build` (esbuild-bundles each of the 4 actions' `src` entry to its own `dist/index.js`), `test` (vitest run), `lint` (actionlint)
+- [X] T005 [P] Add `examples/swarm-reviewer.config.json` as a starter config matching `contracts/config.schema.json` (one aggregator + one reviewer, both provider `"anthropic"`, to keep Setup buildable before other adapters exist)
 
 **Checkpoint**: Toolchain builds and runs (even with empty `src/`), CI skeleton exists.
 
@@ -48,16 +48,16 @@ implementation and testing of each story.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 [P] Implement `src/config/schema.ts` — ajv schema mirroring `contracts/config.schema.json`
-- [ ] T007 Implement `src/config/validate.ts` — fail-fast validation: schema check via T006, exactly-one-`role:"aggregator"` rule, non-empty `agents[]`, unsupported `version` rejection; accepts an injected `knownProviders: string[]` so it doesn't depend on the provider registry directly (depends on T006)
-- [ ] T008 [P] Implement `src/lib/diff.ts` — fetch a PR's diff via `GET /repos/{owner}/{repo}/pulls/{pull_number}` (`Accept: application/vnd.github.v3.diff`), truncate to `diff.maxBytes` (default from data-model.md), return `{ diff, diffTruncated }`
-- [ ] T009 [P] Implement `src/lib/github-client.ts` — thin wrapper over `@actions/github`'s Octokit for the calls T008/pr-comment/deliver need
-- [ ] T010 [P] Implement `src/lib/observability.ts` — records per-agent `{status, durationMs, approxCost}` and writes a GitHub Actions job summary table (Principle VIII)
-- [ ] T011 [P] Implement `src/providers/types.ts` — `ProviderAdapter`, `ReviewRequest/Response`, `AggregateRequest/Response` per `contracts/provider-adapter-contract.md`
-- [ ] T012 Implement `src/providers/registry.ts` — `Map<string, ProviderAdapter>` with a `register`/`get` API (depends on T011)
-- [ ] T013 [P] Implement `src/delivery/types.ts` — `DeliveryChannel`, `DeliveryOutcome` per `contracts/delivery-channel-contract.md`
-- [ ] T014 Implement `src/delivery/registry.ts` — `Map<string, DeliveryChannel>` with a `register`/`get` API (depends on T013)
-- [ ] T015 Implement `actions/validate-config/action.yml` + entry script — reads the config file, resolves `knownProviders` from T012's registry, runs T007, fails the job with the specific problem on any violation (depends on T007, T012)
+- [X] T006 [P] Implement `src/config/schema.ts` — ajv schema mirroring `contracts/config.schema.json`
+- [X] T007 Implement `src/config/validate.ts` — fail-fast validation: schema check via T006, exactly-one-`role:"aggregator"` rule, non-empty `agents[]`, unsupported `version` rejection; accepts an injected `knownProviders: string[]` so it doesn't depend on the provider registry directly (depends on T006)
+- [X] T008 [P] Implement `src/lib/diff.ts` — fetch a PR's diff via `GET /repos/{owner}/{repo}/pulls/{pull_number}` (`Accept: application/vnd.github.v3.diff`), truncate to `diff.maxBytes` (default from data-model.md), return `{ diff, diffTruncated }`
+- [X] T009 [P] Implement `src/lib/github-client.ts` — thin wrapper over `@actions/github`'s Octokit for the calls T008/pr-comment/deliver need
+- [X] T010 [P] Implement `src/lib/observability.ts` — records per-agent `{status, durationMs, approxCost}` and writes a GitHub Actions job summary table (Principle VIII)
+- [X] T011 [P] Implement `src/providers/types.ts` — `ProviderAdapter`, `ReviewRequest/Response`, `AggregateRequest/Response` per `contracts/provider-adapter-contract.md`
+- [X] T012 Implement `src/providers/registry.ts` — `Map<string, ProviderAdapter>` with a `register`/`get` API (depends on T011)
+- [X] T013 [P] Implement `src/delivery/types.ts` — `DeliveryChannel`, `DeliveryOutcome` per `contracts/delivery-channel-contract.md`
+- [X] T014 Implement `src/delivery/registry.ts` — `Map<string, DeliveryChannel>` with a `register`/`get` API (depends on T013)
+- [X] T015 Implement `actions/validate-config/action.yml` + entry script — reads the config file, resolves `knownProviders` from T012's registry, runs T007, fails the job with the specific problem on any violation (depends on T007, T012)
 
 **Checkpoint**: Shared config/provider/delivery scaffolding compiles; `validate-config` runs standalone against `examples/swarm-reviewer.config.json`.
 

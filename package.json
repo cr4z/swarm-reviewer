@@ -1,0 +1,32 @@
+{
+  "name": "swarm-reviewer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Reusable GitHub Actions workflow for multi-model PR review.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "actionlint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^9.1.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.2",
+    "vitest": "^2.0.0"
+  },
+  "overrides": {
+    "undici": "^8.10.1"
+  }
+}
