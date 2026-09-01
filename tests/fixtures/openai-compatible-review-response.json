@@ -1,0 +1,10 @@
+{
+  "choices": [
+    {
+      "message": {
+        "content": "{\"summary\": \"Looks solid overall.\", \"findings\": [{\"severity\": \"blocking\", \"file\": \"src/auth.ts\", \"line\": 42, \"description\": \"Missing null check before dereference.\"}]}"
+      }
+    }
+  ],
+  "usage": { "prompt_tokens": 950, "completion_tokens": 60 }
+}

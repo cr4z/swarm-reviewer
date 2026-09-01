@@ -2,16 +2,28 @@
   "version": 1,
   "agents": [
     {
-      "id": "reviewer",
+      "id": "claude-reviewer",
       "provider": "anthropic",
       "model": "claude-sonnet-4-5",
       "apiKeySecret": "ANTHROPIC_API_KEY"
     },
     {
-      "id": "core",
-      "provider": "anthropic",
-      "model": "claude-sonnet-4-5",
-      "apiKeySecret": "ANTHROPIC_AGGREGATOR_API_KEY",
+      "id": "chatgpt-reviewer",
+      "provider": "openai",
+      "model": "gpt-5.1",
+      "apiKeySecret": "OPENAI_API_KEY"
+    },
+    {
+      "id": "deepseek-reviewer",
+      "provider": "deepseek",
+      "model": "deepseek-chat",
+      "apiKeySecret": "DEEPSEEK_API_KEY"
+    },
+    {
+      "id": "kimi-aggregator",
+      "provider": "kimi",
+      "model": "kimi-k2",
+      "apiKeySecret": "KIMI_API_KEY",
       "role": "aggregator"
     }
   ],

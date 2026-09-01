@@ -109,8 +109,8 @@ four MVP providers.
 
 ### Implementation for User Story 2
 
-- [ ] T030 [P] [US2] Update `examples/swarm-reviewer.config.json` to a 4-agent example spanning all four MVP providers (one as aggregator), demonstrating config-only composition
-- [ ] T031 [US2] Add a "Configuring agents" section to `README.md` documenting add/remove-agent-via-config-only using the four built-in providers, and how to add a fifth provider later (points at `contracts/provider-adapter-contract.md`)
+- [X] T030 [P] [US2] Update `examples/swarm-reviewer.config.json` to a 4-agent example spanning all four MVP providers (one as aggregator), demonstrating config-only composition
+- [X] T031 [US2] Add a "Configuring agents" section to `README.md` documenting add/remove-agent-via-config-only using the four built-in providers, and how to add a fifth provider later (points at `contracts/provider-adapter-contract.md`)
 
 **Checkpoint**: User Stories 1 and 2 both independently functional.
 
@@ -127,11 +127,11 @@ break the config itself (run fails immediately, nothing is posted or emailed).
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Harden `actions/run-agent` entry: enforce `timeoutSeconds` explicitly, classify failures as `"failed"` vs `"timed_out"`, and ensure no thrown error message can contain a credential value (Principle VI) (depends on T021)
-- [ ] T033 [US3] Harden `actions/aggregate` entry: build `agentsMissing[]` from any expected `finding-<id>.json` that is absent or fails to parse, and make the `UnifiedReport.body` explicitly name each missing agent (FR-006) (depends on T022)
-- [ ] T034 [US3] Handle total-failure in `actions/aggregate` entry: when zero `FindingSet`s are available, fail the job instead of producing a `UnifiedReport` (FR-012) (depends on T022, T033)
-- [ ] T035 [US3] Harden `src/config/validate.ts` error messages so each failure names the exact offending field/agent (missing field, zero/multiple aggregators, unknown provider key, unsupported `version`) (FR-011) (depends on T007)
-- [ ] T036 [US3] In `.github/workflows/review.yml`, gate the `deliver` job on `aggregate` having actually produced a report (job-level `if:`), so a failed aggregation never reaches delivery (depends on T028, T034)
+- [X] T032 [US3] Harden `actions/run-agent` entry: enforce `timeoutSeconds` explicitly, classify failures as `"failed"` vs `"timed_out"`, and ensure no thrown error message can contain a credential value (Principle VI) (depends on T021)
+- [X] T033 [US3] Harden `actions/aggregate` entry: build `agentsMissing[]` from any expected `finding-<id>.json` that is absent or fails to parse, and make the `UnifiedReport.body` explicitly name each missing agent (FR-006) (depends on T022)
+- [X] T034 [US3] Handle total-failure in `actions/aggregate` entry: when zero `FindingSet`s are available, fail the job instead of producing a `UnifiedReport` (FR-012) (depends on T022, T033)
+- [X] T035 [US3] Harden `src/config/validate.ts` error messages so each failure names the exact offending field/agent (missing field, zero/multiple aggregators, unknown provider key, unsupported `version`) (FR-011) (depends on T007)
+- [X] T036 [US3] In `.github/workflows/review.yml`, gate the `deliver` job on `aggregate` having actually produced a report (job-level `if:`), so a failed aggregation never reaches delivery (depends on T028, T034)
 
 **Checkpoint**: All three user stories independently functional; failure paths verified against quickstart.md.
 
@@ -141,10 +141,10 @@ break the config itself (run fails immediately, nothing is posted or emailed).
 
 **Purpose**: Quality gates and documentation spanning all stories.
 
-- [ ] T037 [P] Add `tests/unit/config.test.ts` (Vitest) covering `src/config/validate.ts`: valid config, missing required field, zero aggregators, two aggregators, unknown provider, unsupported version
-- [ ] T038 [P] Add `tests/unit/pr-comment.test.ts` (Vitest) covering `src/delivery/pr-comment.ts` against a mocked GitHub client: no existing marker comment → POST; existing marker comment → PATCH, never delete+recreate
-- [ ] T039 [P] Add `tests/fixtures/` recorded responses for all four providers (anthropic, openai, deepseek, kimi) and `tests/unit/providers.test.ts` exercising each adapter's request/response mapping without live network calls
-- [ ] T040 [P] Write top-level `README.md`: what this is, quickstart summary, link to `contracts/config.schema.json` and `quickstart.md`
+- [X] T037 [P] Add `tests/unit/config.test.ts` (Vitest) covering `src/config/validate.ts`: valid config, missing required field, zero aggregators, two aggregators, unknown provider, unsupported version
+- [X] T038 [P] Add `tests/unit/pr-comment.test.ts` (Vitest) covering `src/delivery/pr-comment.ts` against a mocked GitHub client: no existing marker comment → POST; existing marker comment → PATCH, never delete+recreate
+- [X] T039 [P] Add `tests/fixtures/` recorded responses for all four providers (anthropic, openai, deepseek, kimi) and `tests/unit/providers.test.ts` exercising each adapter's request/response mapping without live network calls
+- [X] T040 [P] Write top-level `README.md`: what this is, quickstart summary, link to `contracts/config.schema.json` and `quickstart.md`
 - [ ] T041 Execute `quickstart.md` end-to-end against a real scratch consumer repo (constitution Development Workflow gate — required before tagging)
 - [ ] T042 Tag `v1.0.0` and the rolling `v1` ref per Principle V, only after T041 passes clean
 
