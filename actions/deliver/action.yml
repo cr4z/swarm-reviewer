@@ -1,0 +1,28 @@
+name: "Swarm Reviewer - Deliver"
+description: "Delivers the UnifiedReport via every enabled channel (Principle IV/VII, FR-007/FR-008/FR-009)."
+inputs:
+  config_json:
+    description: "The whole validated configuration (delivery settings + recipients)."
+    required: true
+  email_api_key:
+    description: "Resolved credential for the email provider, if email delivery is enabled."
+    required: false
+  github_token:
+    description: "Token used to post/update the PR comment."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Download unified report
+      uses: actions/download-artifact@v4
+      with:
+        name: unified-report
+        path: swarm-reviewer-in/report
+
+    - name: Deliver
+      shell: bash
+      run: node "${{ github.action_path }}/dist/index.js"
+      env:
+        INPUT_CONFIG_JSON: ${{ inputs.config_json }}
+        INPUT_EMAIL_API_KEY: ${{ inputs.email_api_key }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}

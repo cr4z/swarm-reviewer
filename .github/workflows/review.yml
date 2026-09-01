@@ -1,0 +1,78 @@
+name: Swarm Reviewer
+
+on:
+  workflow_call:
+    inputs:
+      config_path:
+        description: "Path, relative to the consumer repo root, to the Configuration file."
+        type: string
+        required: false
+        default: swarm-reviewer.config.json
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  validate:
+    name: Validate config
+    runs-on: ubuntu-latest
+    outputs:
+      config_json: ${{ steps.validate.outputs.config_json }}
+      reviewer_agents_json: ${{ steps.validate.outputs.reviewer_agents_json }}
+      aggregator_json: ${{ steps.validate.outputs.aggregator_json }}
+      email_api_key_secret: ${{ steps.validate.outputs.email_api_key_secret }}
+    steps:
+      - id: validate
+        uses: ./actions/validate-config
+        with:
+          config_path: ${{ inputs.config_path }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  review:
+    name: Run agent (${{ matrix.agent.id }})
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Principle II — one agent's failure must not cancel the others
+      matrix:
+        agent: ${{ fromJSON(needs.validate.outputs.reviewer_agents_json) }}
+    steps:
+      - uses: ./actions/run-agent
+        with:
+          agent_json: ${{ toJSON(matrix.agent) }}
+          api_key: ${{ secrets[matrix.agent.apiKeySecret] }}
+          config_json: ${{ needs.validate.outputs.config_json }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  aggregate:
+    name: Aggregate
+    needs: [validate, review]
+    # Runs whenever validate succeeded, regardless of individual agents' outcomes in the
+    # matrix (Principle III) — but never if validate itself failed (nothing to aggregate).
+    if: ${{ !cancelled() && needs.validate.result == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      report_produced: ${{ steps.aggregate.outputs.report_produced }}
+    steps:
+      - id: aggregate
+        uses: ./actions/aggregate
+        with:
+          config_json: ${{ needs.validate.outputs.config_json }}
+          aggregator_json: ${{ needs.validate.outputs.aggregator_json }}
+          reviewer_agents_json: ${{ needs.validate.outputs.reviewer_agents_json }}
+          aggregator_api_key: ${{ secrets[fromJSON(needs.validate.outputs.aggregator_json).apiKeySecret] }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deliver:
+    name: Deliver
+    needs: [validate, aggregate]
+    # FR-012 — a failed/absent aggregation must never reach delivery.
+    if: ${{ !cancelled() && needs.aggregate.result == 'success' && needs.aggregate.outputs.report_produced == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./actions/deliver
+        with:
+          config_json: ${{ needs.validate.outputs.config_json }}
+          email_api_key: ${{ needs.validate.outputs.email_api_key_secret != '' && secrets[needs.validate.outputs.email_api_key_secret] || '' }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

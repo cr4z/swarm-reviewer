@@ -35,8 +35,19 @@ async function run(): Promise<void> {
 
   try {
     const config = validateConfig(parsed, { knownProviders: knownProviderKeys() });
+    const aggregator = config.agents.find((a) => a.role === "aggregator")!; // guaranteed by validateConfig
+    const reviewerAgents = config.agents.filter((a) => a.role !== "aggregator");
+
+    const emailConfig = config.delivery?.email;
+    const emailEnabled = !!emailConfig && emailConfig.enabled !== false;
+
     core.setOutput("config_json", JSON.stringify(config));
-    core.info(`Configuration valid: ${config.agents.length} agent(s) configured.`);
+    core.setOutput("reviewer_agents_json", JSON.stringify(reviewerAgents));
+    core.setOutput("aggregator_json", JSON.stringify(aggregator));
+    core.setOutput("email_api_key_secret", emailEnabled ? emailConfig!.apiKeySecret ?? "" : "");
+    core.info(
+      `Configuration valid: ${reviewerAgents.length} reviewer agent(s) + 1 aggregator ("${aggregator.id}").`,
+    );
   } catch (err) {
     if (err instanceof ConfigValidationError) {
       core.setFailed(err.message);

@@ -15438,7 +15438,7 @@ var require_snapshot_utils = __commonJS({
 var require_snapshot_recorder = __commonJS({
   "node_modules/undici/lib/mock/snapshot-recorder.js"(exports, module) {
     "use strict";
-    var { writeFile, readFile, mkdir } = __require("node:fs/promises");
+    var { writeFile: writeFile2, readFile: readFile2, mkdir: mkdir2 } = __require("node:fs/promises");
     var { dirname, resolve } = __require("node:path");
     var { setTimeout: setTimeout2, clearTimeout: clearTimeout2 } = __require("node:timers");
     var { InvalidArgumentError, UndiciError } = require_errors();
@@ -15655,7 +15655,7 @@ var require_snapshot_recorder = __commonJS({
           throw new InvalidArgumentError("Snapshot path is required");
         }
         try {
-          const data = await readFile(resolve(path), "utf8");
+          const data = await readFile2(resolve(path), "utf8");
           const parsed = JSON.parse(data);
           if (Array.isArray(parsed)) {
             this.#snapshots.clear();
@@ -15685,12 +15685,12 @@ var require_snapshot_recorder = __commonJS({
           throw new InvalidArgumentError("Snapshot path is required");
         }
         const resolvedPath = resolve(path);
-        await mkdir(dirname(resolvedPath), { recursive: true });
+        await mkdir2(dirname(resolvedPath), { recursive: true });
         const data = Array.from(this.#snapshots.entries()).map(([hash, snapshot]) => ({
           hash,
           snapshot
         }));
-        await writeFile(resolvedPath, JSON.stringify(data, null, 2), { flush: true });
+        await writeFile2(resolvedPath, JSON.stringify(data, null, 2), { flush: true });
       }
       /**
        * Clears all recorded snapshots
@@ -28485,7 +28485,7 @@ var require_summary = __commonJS({
     exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
     var os_1 = __require("os");
     var fs_1 = __require("fs");
-    var { access, appendFile, writeFile } = fs_1.promises;
+    var { access, appendFile, writeFile: writeFile2 } = fs_1.promises;
     exports.SUMMARY_ENV_VAR = "GITHUB_STEP_SUMMARY";
     exports.SUMMARY_DOCS_URL = "https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary";
     var Summary = class {
@@ -28543,7 +28543,7 @@ var require_summary = __commonJS({
         return __awaiter2(this, void 0, void 0, function* () {
           const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
           const filePath = yield this.filePath();
-          const writeFunc = overwrite ? writeFile : appendFile;
+          const writeFunc = overwrite ? writeFile2 : appendFile;
           yield writeFunc(filePath, this._buffer, { encoding: "utf8" });
           return this.emptyBuffer();
         });
@@ -30005,10 +30005,10 @@ var require_core = __commonJS({
       (0, command_1.issueCommand)("set-env", { name }, convertedVal);
     }
     exports.exportVariable = exportVariable;
-    function setSecret(secret) {
+    function setSecret2(secret) {
       (0, command_1.issueCommand)("add-mask", {}, secret);
     }
-    exports.setSecret = setSecret;
+    exports.setSecret = setSecret2;
     function addPath(inputPath) {
       const filePath = process.env["GITHUB_PATH"] || "";
       if (filePath) {
@@ -30050,7 +30050,7 @@ var require_core = __commonJS({
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
     exports.getBooleanInput = getBooleanInput;
-    function setOutput2(name, value) {
+    function setOutput(name, value) {
       const filePath = process.env["GITHUB_OUTPUT"] || "";
       if (filePath) {
         return (0, file_command_1.issueFileCommand)("OUTPUT", (0, file_command_1.prepareKeyValueMessage)(name, value));
@@ -30058,7 +30058,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       process.stdout.write(os.EOL);
       (0, command_1.issueCommand)("set-output", { name }, (0, utils_1.toCommandValue)(value));
     }
-    exports.setOutput = setOutput2;
+    exports.setOutput = setOutput;
     function setCommandEcho(enabled) {
       (0, command_1.issue)("echo", enabled ? "on" : "off");
     }
@@ -30080,10 +30080,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning(message, properties = {}) {
+    function warning2(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning;
+    exports.warning = warning2;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -35221,7 +35221,7 @@ var require_core2 = __commonJS({
         uriResolver
       };
     }
-    var Ajv3 = class {
+    var Ajv2 = class {
       constructor(opts = {}) {
         this.schemas = {};
         this.refs = {};
@@ -35540,7 +35540,7 @@ var require_core2 = __commonJS({
           }
         }
       }
-      _addSchema(schema, meta, baseId, validateSchema2 = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
+      _addSchema(schema, meta, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
         let id;
         const { schemaId } = this.opts;
         if (typeof schema == "object") {
@@ -35563,7 +35563,7 @@ var require_core2 = __commonJS({
             this._checkUnique(baseId);
           this.refs[baseId] = sch;
         }
-        if (validateSchema2)
+        if (validateSchema)
           this.validateSchema(schema, true);
         return sch;
       }
@@ -35591,9 +35591,9 @@ var require_core2 = __commonJS({
         }
       }
     };
-    Ajv3.ValidationError = validation_error_1.default;
-    Ajv3.MissingRefError = ref_error_1.default;
-    exports.default = Ajv3;
+    Ajv2.ValidationError = validation_error_1.default;
+    Ajv2.MissingRefError = ref_error_1.default;
+    exports.default = Ajv2;
     function checkOptions(checkOpts, options, msg, log = "error") {
       for (const key in checkOpts) {
         const opt = key;
@@ -35868,7 +35868,7 @@ var require_core3 = __commonJS({
     Object.defineProperty(exports, "__esModule", { value: true });
     var id_1 = require_id();
     var ref_1 = require_ref();
-    var core2 = [
+    var core3 = [
       "$schema",
       "$id",
       "$defs",
@@ -35878,7 +35878,7 @@ var require_core3 = __commonJS({
       id_1.default,
       ref_1.default
     ];
-    exports.default = core2;
+    exports.default = core3;
   }
 });
 
@@ -37704,7 +37704,7 @@ var require_ajv = __commonJS({
     var draft7MetaSchema = require_json_schema_draft_07();
     var META_SUPPORT_DATA = ["/properties"];
     var META_SCHEMA_ID = "http://json-schema.org/draft-07/schema";
-    var Ajv3 = class extends core_1.default {
+    var Ajv2 = class extends core_1.default {
       _addVocabularies() {
         super._addVocabularies();
         draft7_1.default.forEach((v) => this.addVocabulary(v));
@@ -37723,11 +37723,11 @@ var require_ajv = __commonJS({
         return this.opts.defaultMeta = super.defaultMeta() || (this.getSchema(META_SCHEMA_ID) ? META_SCHEMA_ID : void 0);
       }
     };
-    exports.Ajv = Ajv3;
-    module.exports = exports = Ajv3;
-    module.exports.Ajv = Ajv3;
+    exports.Ajv = Ajv2;
+    module.exports = exports = Ajv2;
+    module.exports.Ajv = Ajv2;
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = Ajv3;
+    exports.default = Ajv2;
     var validate_1 = require_validate();
     Object.defineProperty(exports, "KeywordCxt", { enumerable: true, get: function() {
       return validate_1.KeywordCxt;
@@ -37762,325 +37762,8 @@ var require_ajv = __commonJS({
   }
 });
 
-// node_modules/ajv-formats/dist/formats.js
-var require_formats = __commonJS({
-  "node_modules/ajv-formats/dist/formats.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.formatNames = exports.fastFormats = exports.fullFormats = void 0;
-    function fmtDef(validate, compare) {
-      return { validate, compare };
-    }
-    exports.fullFormats = {
-      // date: http://tools.ietf.org/html/rfc3339#section-5.6
-      date: fmtDef(date, compareDate),
-      // date-time: http://tools.ietf.org/html/rfc3339#section-5.6
-      time: fmtDef(getTime(true), compareTime),
-      "date-time": fmtDef(getDateTime(true), compareDateTime),
-      "iso-time": fmtDef(getTime(), compareIsoTime),
-      "iso-date-time": fmtDef(getDateTime(), compareIsoDateTime),
-      // duration: https://tools.ietf.org/html/rfc3339#appendix-A
-      duration: /^P(?!$)((\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?|(\d+W)?)$/,
-      uri,
-      "uri-reference": /^(?:[a-z][a-z0-9+\-.]*:)?(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'"()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'"()*+,;=:@]|%[0-9a-f]{2})*)*)?(?:\?(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'"()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i,
-      // uri-template: https://tools.ietf.org/html/rfc6570
-      "uri-template": /^(?:(?:[^\x00-\x20"'<>%\\^`{|}]|%[0-9a-f]{2})|\{[+#./;?&=,!@|]?(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?(?:,(?:[a-z0-9_]|%[0-9a-f]{2})+(?::[1-9][0-9]{0,3}|\*)?)*\})*$/i,
-      // For the source: https://gist.github.com/dperini/729294
-      // For test cases: https://mathiasbynens.be/demo/url-regex
-      url: /^(?:https?|ftp):\/\/(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z0-9\u{00a1}-\u{ffff}]+-)*[a-z0-9\u{00a1}-\u{ffff}]+)(?:\.(?:[a-z0-9\u{00a1}-\u{ffff}]+-)*[a-z0-9\u{00a1}-\u{ffff}]+)*(?:\.(?:[a-z\u{00a1}-\u{ffff}]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/iu,
-      email: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i,
-      hostname: /^(?=.{1,253}\.?$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*\.?$/i,
-      // optimized https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9780596802837/ch07s16.html
-      ipv4: /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/,
-      ipv6: /^((([0-9a-f]{1,4}:){7}([0-9a-f]{1,4}|:))|(([0-9a-f]{1,4}:){6}(:[0-9a-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-f]{1,4}:){5}(((:[0-9a-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-f]{1,4}:){4}(((:[0-9a-f]{1,4}){1,3})|((:[0-9a-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){3}(((:[0-9a-f]{1,4}){1,4})|((:[0-9a-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){2}(((:[0-9a-f]{1,4}){1,5})|((:[0-9a-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-f]{1,4}:){1}(((:[0-9a-f]{1,4}){1,6})|((:[0-9a-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-f]{1,4}){1,7})|((:[0-9a-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))$/i,
-      regex,
-      // uuid: http://tools.ietf.org/html/rfc4122
-      uuid: /^(?:urn:uuid:)?[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i,
-      // JSON-pointer: https://tools.ietf.org/html/rfc6901
-      // uri fragment: https://tools.ietf.org/html/rfc3986#appendix-A
-      "json-pointer": /^(?:\/(?:[^~/]|~0|~1)*)*$/,
-      "json-pointer-uri-fragment": /^#(?:\/(?:[a-z0-9_\-.!$&'()*+,;:=@]|%[0-9a-f]{2}|~0|~1)*)*$/i,
-      // relative JSON-pointer: http://tools.ietf.org/html/draft-luff-relative-json-pointer-00
-      "relative-json-pointer": /^(?:0|[1-9][0-9]*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$/,
-      // the following formats are used by the openapi specification: https://spec.openapis.org/oas/v3.0.0#data-types
-      // byte: https://github.com/miguelmota/is-base64
-      byte,
-      // signed 32 bit integer
-      int32: { type: "number", validate: validateInt32 },
-      // signed 64 bit integer
-      int64: { type: "number", validate: validateInt64 },
-      // C-type float
-      float: { type: "number", validate: validateNumber },
-      // C-type double
-      double: { type: "number", validate: validateNumber },
-      // hint to the UI to hide input strings
-      password: true,
-      // unchecked string payload
-      binary: true
-    };
-    exports.fastFormats = {
-      ...exports.fullFormats,
-      date: fmtDef(/^\d\d\d\d-[0-1]\d-[0-3]\d$/, compareDate),
-      time: fmtDef(/^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i, compareTime),
-      "date-time": fmtDef(/^\d\d\d\d-[0-1]\d-[0-3]\dt(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)$/i, compareDateTime),
-      "iso-time": fmtDef(/^(?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i, compareIsoTime),
-      "iso-date-time": fmtDef(/^\d\d\d\d-[0-1]\d-[0-3]\d[t\s](?:[0-2]\d:[0-5]\d:[0-5]\d|23:59:60)(?:\.\d+)?(?:z|[+-]\d\d(?::?\d\d)?)?$/i, compareIsoDateTime),
-      // uri: https://github.com/mafintosh/is-my-json-valid/blob/master/formats.js
-      uri: /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/)?[^\s]*$/i,
-      "uri-reference": /^(?:(?:[a-z][a-z0-9+\-.]*:)?\/?\/)?(?:[^\\\s#][^\s#]*)?(?:#[^\\\s]*)?$/i,
-      // email (sources from jsen validator):
-      // http://stackoverflow.com/questions/201323/using-a-regular-expression-to-validate-an-email-address#answer-8829363
-      // http://www.w3.org/TR/html5/forms.html#valid-e-mail-address (search for 'wilful violation')
-      email: /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i
-    };
-    exports.formatNames = Object.keys(exports.fullFormats);
-    function isLeapYear(year) {
-      return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-    }
-    var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
-    var DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    function date(str) {
-      const matches = DATE.exec(str);
-      if (!matches)
-        return false;
-      const year = +matches[1];
-      const month = +matches[2];
-      const day = +matches[3];
-      return month >= 1 && month <= 12 && day >= 1 && day <= (month === 2 && isLeapYear(year) ? 29 : DAYS[month]);
-    }
-    function compareDate(d1, d2) {
-      if (!(d1 && d2))
-        return void 0;
-      if (d1 > d2)
-        return 1;
-      if (d1 < d2)
-        return -1;
-      return 0;
-    }
-    var TIME = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
-    function getTime(strictTimeZone) {
-      return function time(str) {
-        const matches = TIME.exec(str);
-        if (!matches)
-          return false;
-        const hr = +matches[1];
-        const min = +matches[2];
-        const sec = +matches[3];
-        const tz = matches[4];
-        const tzSign = matches[5] === "-" ? -1 : 1;
-        const tzH = +(matches[6] || 0);
-        const tzM = +(matches[7] || 0);
-        if (tzH > 23 || tzM > 59 || strictTimeZone && !tz)
-          return false;
-        if (hr <= 23 && min <= 59 && sec < 60)
-          return true;
-        const utcMin = min - tzM * tzSign;
-        const utcHr = hr - tzH * tzSign - (utcMin < 0 ? 1 : 0);
-        return (utcHr === 23 || utcHr === -1) && (utcMin === 59 || utcMin === -1) && sec < 61;
-      };
-    }
-    function compareTime(s1, s2) {
-      if (!(s1 && s2))
-        return void 0;
-      const t1 = (/* @__PURE__ */ new Date("2020-01-01T" + s1)).valueOf();
-      const t2 = (/* @__PURE__ */ new Date("2020-01-01T" + s2)).valueOf();
-      if (!(t1 && t2))
-        return void 0;
-      return t1 - t2;
-    }
-    function compareIsoTime(t1, t2) {
-      if (!(t1 && t2))
-        return void 0;
-      const a1 = TIME.exec(t1);
-      const a2 = TIME.exec(t2);
-      if (!(a1 && a2))
-        return void 0;
-      t1 = a1[1] + a1[2] + a1[3];
-      t2 = a2[1] + a2[2] + a2[3];
-      if (t1 > t2)
-        return 1;
-      if (t1 < t2)
-        return -1;
-      return 0;
-    }
-    var DATE_TIME_SEPARATOR = /t|\s/i;
-    function getDateTime(strictTimeZone) {
-      const time = getTime(strictTimeZone);
-      return function date_time(str) {
-        const dateTime = str.split(DATE_TIME_SEPARATOR);
-        return dateTime.length === 2 && date(dateTime[0]) && time(dateTime[1]);
-      };
-    }
-    function compareDateTime(dt1, dt2) {
-      if (!(dt1 && dt2))
-        return void 0;
-      const d1 = new Date(dt1).valueOf();
-      const d2 = new Date(dt2).valueOf();
-      if (!(d1 && d2))
-        return void 0;
-      return d1 - d2;
-    }
-    function compareIsoDateTime(dt1, dt2) {
-      if (!(dt1 && dt2))
-        return void 0;
-      const [d1, t1] = dt1.split(DATE_TIME_SEPARATOR);
-      const [d2, t2] = dt2.split(DATE_TIME_SEPARATOR);
-      const res = compareDate(d1, d2);
-      if (res === void 0)
-        return void 0;
-      return res || compareTime(t1, t2);
-    }
-    var NOT_URI_FRAGMENT = /\/|:/;
-    var URI = /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/i;
-    function uri(str) {
-      return NOT_URI_FRAGMENT.test(str) && URI.test(str);
-    }
-    var BYTE = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/gm;
-    function byte(str) {
-      BYTE.lastIndex = 0;
-      return BYTE.test(str);
-    }
-    var MIN_INT32 = -(2 ** 31);
-    var MAX_INT32 = 2 ** 31 - 1;
-    function validateInt32(value) {
-      return Number.isInteger(value) && value <= MAX_INT32 && value >= MIN_INT32;
-    }
-    function validateInt64(value) {
-      return Number.isInteger(value);
-    }
-    function validateNumber() {
-      return true;
-    }
-    var Z_ANCHOR = /[^\\]\\Z/;
-    function regex(str) {
-      if (Z_ANCHOR.test(str))
-        return false;
-      try {
-        new RegExp(str);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
-  }
-});
-
-// node_modules/ajv-formats/dist/limit.js
-var require_limit = __commonJS({
-  "node_modules/ajv-formats/dist/limit.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.formatLimitDefinition = void 0;
-    var ajv_1 = require_ajv();
-    var codegen_1 = require_codegen();
-    var ops = codegen_1.operators;
-    var KWDs = {
-      formatMaximum: { okStr: "<=", ok: ops.LTE, fail: ops.GT },
-      formatMinimum: { okStr: ">=", ok: ops.GTE, fail: ops.LT },
-      formatExclusiveMaximum: { okStr: "<", ok: ops.LT, fail: ops.GTE },
-      formatExclusiveMinimum: { okStr: ">", ok: ops.GT, fail: ops.LTE }
-    };
-    var error = {
-      message: ({ keyword, schemaCode }) => (0, codegen_1.str)`should be ${KWDs[keyword].okStr} ${schemaCode}`,
-      params: ({ keyword, schemaCode }) => (0, codegen_1._)`{comparison: ${KWDs[keyword].okStr}, limit: ${schemaCode}}`
-    };
-    exports.formatLimitDefinition = {
-      keyword: Object.keys(KWDs),
-      type: "string",
-      schemaType: "string",
-      $data: true,
-      error,
-      code(cxt) {
-        const { gen, data, schemaCode, keyword, it } = cxt;
-        const { opts, self } = it;
-        if (!opts.validateFormats)
-          return;
-        const fCxt = new ajv_1.KeywordCxt(it, self.RULES.all.format.definition, "format");
-        if (fCxt.$data)
-          validate$DataFormat();
-        else
-          validateFormat();
-        function validate$DataFormat() {
-          const fmts = gen.scopeValue("formats", {
-            ref: self.formats,
-            code: opts.code.formats
-          });
-          const fmt = gen.const("fmt", (0, codegen_1._)`${fmts}[${fCxt.schemaCode}]`);
-          cxt.fail$data((0, codegen_1.or)((0, codegen_1._)`typeof ${fmt} != "object"`, (0, codegen_1._)`${fmt} instanceof RegExp`, (0, codegen_1._)`typeof ${fmt}.compare != "function"`, compareCode(fmt)));
-        }
-        function validateFormat() {
-          const format = fCxt.schema;
-          const fmtDef = self.formats[format];
-          if (!fmtDef || fmtDef === true)
-            return;
-          if (typeof fmtDef != "object" || fmtDef instanceof RegExp || typeof fmtDef.compare != "function") {
-            throw new Error(`"${keyword}": format "${format}" does not define "compare" function`);
-          }
-          const fmt = gen.scopeValue("formats", {
-            key: format,
-            ref: fmtDef,
-            code: opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(format)}` : void 0
-          });
-          cxt.fail$data(compareCode(fmt));
-        }
-        function compareCode(fmt) {
-          return (0, codegen_1._)`${fmt}.compare(${data}, ${schemaCode}) ${KWDs[keyword].fail} 0`;
-        }
-      },
-      dependencies: ["format"]
-    };
-    var formatLimitPlugin = (ajv3) => {
-      ajv3.addKeyword(exports.formatLimitDefinition);
-      return ajv3;
-    };
-    exports.default = formatLimitPlugin;
-  }
-});
-
-// node_modules/ajv-formats/dist/index.js
-var require_dist = __commonJS({
-  "node_modules/ajv-formats/dist/index.js"(exports, module) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var formats_1 = require_formats();
-    var limit_1 = require_limit();
-    var codegen_1 = require_codegen();
-    var fullName = new codegen_1.Name("fullFormats");
-    var fastName = new codegen_1.Name("fastFormats");
-    var formatsPlugin = (ajv3, opts = { keywords: true }) => {
-      if (Array.isArray(opts)) {
-        addFormats2(ajv3, opts, formats_1.fullFormats, fullName);
-        return ajv3;
-      }
-      const [formats, exportName] = opts.mode === "fast" ? [formats_1.fastFormats, fastName] : [formats_1.fullFormats, fullName];
-      const list = opts.formats || formats_1.formatNames;
-      addFormats2(ajv3, list, formats, exportName);
-      if (opts.keywords)
-        (0, limit_1.default)(ajv3);
-      return ajv3;
-    };
-    formatsPlugin.get = (name, mode = "full") => {
-      const formats = mode === "fast" ? formats_1.fastFormats : formats_1.fullFormats;
-      const f = formats[name];
-      if (!f)
-        throw new Error(`Unknown format "${name}"`);
-      return f;
-    };
-    function addFormats2(ajv3, list, fs, exportName) {
-      var _a;
-      var _b;
-      (_a = (_b = ajv3.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
-      for (const f of list)
-        ajv3.addFormat(f, fs[f]);
-    }
-    module.exports = exports = formatsPlugin;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = formatsPlugin;
-  }
-});
-
-// actions/validate-config/src/index.ts
-var core = __toESM(require_core(), 1);
+// actions/run-agent/src/index.ts
+var core2 = __toESM(require_core(), 1);
 
 // node_modules/@actions/github/lib/context.js
 import { readFileSync, existsSync } from "fs";
@@ -42172,161 +41855,58 @@ function createGithubClient(token) {
   return getOctokit(token);
 }
 
-// src/lib/repo-file.ts
-async function readRepoFile(octokit, params) {
-  const response = await octokit.rest.repos.getContent({
+// src/lib/diff.ts
+var DEFAULT_MAX_DIFF_BYTES = 200 * 1024;
+async function fetchPullRequestDiff(octokit, params, maxBytes = DEFAULT_MAX_DIFF_BYTES) {
+  const response = await octokit.rest.pulls.get({
     owner: params.owner,
     repo: params.repo,
-    path: params.path,
-    ref: params.ref
+    pull_number: params.pullNumber,
+    mediaType: { format: "diff" }
   });
-  const data = response.data;
-  if (Array.isArray(data) || data.type !== "file" || typeof data.content !== "string") {
-    throw new Error(`"${params.path}" is not a readable file in ${params.owner}/${params.repo}.`);
+  const fullDiff = String(response.data);
+  return truncateDiff(fullDiff, maxBytes);
+}
+function truncateDiff(diff, maxBytes) {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(diff);
+  if (bytes.length <= maxBytes) {
+    return { diff, diffTruncated: false };
   }
-  return Buffer.from(data.content, data.encoding).toString("utf-8");
+  const truncatedBytes = bytes.slice(0, maxBytes);
+  const decoder = new TextDecoder("utf-8", { fatal: false });
+  const truncated = decoder.decode(truncatedBytes);
+  return {
+    diff: `${truncated}
+
+[... diff truncated at ${maxBytes} bytes ...]`,
+    diffTruncated: true
+  };
 }
 
-// src/config/validate.ts
-var import_ajv = __toESM(require_ajv(), 1);
-var import_ajv_formats = __toESM(require_dist(), 1);
+// src/lib/observability.ts
+var core = __toESM(require_core(), 1);
+function logAgentResult(result) {
+  const base = `agent=${result.agentId} status=${result.status} durationMs=${result.durationMs}`;
+  const cost = result.approxCost ? ` inputTokens=${result.approxCost.inputTokens} outputTokens=${result.approxCost.outputTokens}` : " cost=unknown";
+  if (result.status === "succeeded") {
+    core.info(`${base}${cost}`);
+  } else {
+    core.warning(`${base}${cost} error=${result.error ?? "(none)"}`);
+  }
+}
 
-// src/config/schema.ts
-var configSchema = {
-  $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://github.com/cr4z/swarm-reviewer/contracts/config.schema.json",
-  title: "Swarm Reviewer Configuration",
-  type: "object",
-  required: ["version", "agents"],
-  additionalProperties: false,
-  properties: {
-    version: {
-      type: "integer",
-      enum: [1]
-    },
-    agents: {
-      type: "array",
-      minItems: 1,
-      items: { $ref: "#/$defs/reviewAgent" }
-    },
-    diff: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        maxBytes: { type: "integer", minimum: 1024 }
-      }
-    },
-    delivery: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        prComment: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            enabled: { type: "boolean", default: true }
-          }
-        },
-        email: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            enabled: { type: "boolean", default: true },
-            recipients: {
-              type: "array",
-              items: { type: "string", format: "email" },
-              minItems: 1
-            },
-            provider: { type: "string", enum: ["resend", "sendgrid"] },
-            apiKeySecret: { type: "string", minLength: 1 }
-          }
-        }
-      }
-    }
-  },
-  $defs: {
-    reviewAgent: {
-      type: "object",
-      required: ["id", "provider", "model", "apiKeySecret"],
-      additionalProperties: false,
-      properties: {
-        id: { type: "string", pattern: "^[a-zA-Z0-9_-]+$" },
-        provider: { type: "string" },
-        model: { type: "string" },
-        apiKeySecret: { type: "string", minLength: 1 },
-        role: { type: "string", enum: ["reviewer", "aggregator"], default: "reviewer" },
-        timeoutSeconds: { type: "integer", minimum: 1, default: 180 }
-      }
-    }
-  }
-};
-
-// src/config/validate.ts
-var ajv = new import_ajv.default({ allErrors: true, strict: true });
-(0, import_ajv_formats.default)(ajv);
-var validateSchema = ajv.compile(configSchema);
-var SUPPORTED_VERSIONS = [1];
-var ConfigValidationError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "ConfigValidationError";
-  }
-};
-function validateConfig(raw, options) {
-  if (!validateSchema(raw)) {
-    const detail = (validateSchema.errors ?? []).map((e) => `${e.instancePath || "(root)"} ${e.message}`).join("; ");
-    throw new ConfigValidationError(`Configuration is invalid: ${detail}`);
-  }
-  const config = raw;
-  if (!SUPPORTED_VERSIONS.includes(config.version)) {
-    throw new ConfigValidationError(
-      `Unsupported config version ${config.version}. Supported versions: ${SUPPORTED_VERSIONS.join(", ")}.`
-    );
-  }
-  if (config.agents.length === 0) {
-    throw new ConfigValidationError('Configuration must declare at least one agent in "agents".');
-  }
-  const seenIds = /* @__PURE__ */ new Set();
-  for (const agent of config.agents) {
-    if (seenIds.has(agent.id)) {
-      throw new ConfigValidationError(`Duplicate agent id "${agent.id}" \u2014 agent ids must be unique.`);
-    }
-    seenIds.add(agent.id);
-    if (!options.knownProviders.includes(agent.provider)) {
-      throw new ConfigValidationError(
-        `Agent "${agent.id}" declares unknown provider "${agent.provider}". Known providers: ${options.knownProviders.join(", ") || "(none registered)"}.`
-      );
-    }
-    if (!agent.apiKeySecret.trim()) {
-      throw new ConfigValidationError(`Agent "${agent.id}" has an empty "apiKeySecret".`);
-    }
-  }
-  const aggregators = config.agents.filter((a) => a.role === "aggregator");
-  if (aggregators.length === 0) {
-    throw new ConfigValidationError(
-      'Configuration must designate exactly one agent with role "aggregator"; found none.'
-    );
-  }
-  if (aggregators.length > 1) {
-    throw new ConfigValidationError(
-      `Configuration must designate exactly one agent with role "aggregator"; found ${aggregators.length}: ` + aggregators.map((a) => a.id).join(", ") + "."
-    );
-  }
-  const email = config.delivery?.email;
-  if (email?.enabled !== false) {
-    if (email) {
-      if (!email.recipients || email.recipients.length === 0) {
-        throw new ConfigValidationError('Email delivery is enabled but "delivery.email.recipients" is empty.');
-      }
-      if (!email.provider) {
-        throw new ConfigValidationError('Email delivery is enabled but "delivery.email.provider" is missing.');
-      }
-      if (!email.apiKeySecret || !email.apiKeySecret.trim()) {
-        throw new ConfigValidationError('Email delivery is enabled but "delivery.email.apiKeySecret" is missing.');
-      }
-    }
-  }
-  return config;
+// src/lib/agent-io.ts
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+var AGENT_OUTPUT_DIR = "swarm-reviewer-out";
+var FINDING_FILENAME = "finding.json";
+var AGENT_RESULT_FILENAME = "agent-result.json";
+async function writeJsonFile(dir, filename, data) {
+  await mkdir(dir, { recursive: true });
+  const path = join(dir, filename);
+  await writeFile(path, JSON.stringify(data, null, 2), "utf-8");
+  return path;
 }
 
 // src/providers/registry.ts
@@ -42337,12 +41917,12 @@ function registerProvider(adapter) {
   }
   adapters.set(adapter.key, adapter);
 }
-function knownProviderKeys() {
-  return [...adapters.keys()];
+function getProvider(key) {
+  return adapters.get(key);
 }
 
 // src/providers/prompts.ts
-var import_ajv2 = __toESM(require_ajv(), 1);
+var import_ajv = __toESM(require_ajv(), 1);
 
 // src/providers/http.ts
 async function fetchWithTimeout(url, init, timeoutMs) {
@@ -42376,7 +41956,7 @@ function extractJson(text) {
 }
 
 // src/providers/prompts.ts
-var ajv2 = new import_ajv2.default({ allErrors: true, strict: true });
+var ajv = new import_ajv.default({ allErrors: true, strict: true });
 var reviewResponseSchema = {
   type: "object",
   required: ["summary", "findings"],
@@ -42399,7 +41979,7 @@ var reviewResponseSchema = {
     }
   }
 };
-var validateReviewResponse = ajv2.compile(reviewResponseSchema);
+var validateReviewResponse = ajv.compile(reviewResponseSchema);
 function buildReviewPrompt(request2) {
   const system = 'You are one of several independent code reviewers examining a single pull request. Review only the diff you are given. Respond with ONLY a JSON object of the exact shape {"summary": string, "findings": [{"severity": "blocking"|"warning"|"note", "file": string|null, "line": number|null, "description": string}]}. No prose outside the JSON. An empty findings array is fine if you have nothing to flag.';
   const user = renderPullRequestAndDiff(request2.pullRequestContext, request2.diff, request2.diffTruncated);
@@ -42411,8 +41991,8 @@ function parseReviewResponse(model, text) {
     const detail = (validateReviewResponse.errors ?? []).map((e) => `${e.instancePath} ${e.message}`).join("; ");
     throw new Error(`Model response did not match the expected review JSON shape: ${detail}`);
   }
-  const { summary, findings } = parsed;
-  return { agentId: "", model, summary, findings };
+  const { summary: summary2, findings } = parsed;
+  return { agentId: "", model, summary: summary2, findings };
 }
 function buildAggregatePrompt(request2) {
   const system = "You are the aggregator for a multi-model pull request review. You are given the raw findings already produced by other review agents. Synthesize them into ONE clear Markdown report for a human reading a GitHub PR comment. Do not re-review the diff yourself or introduce findings the other agents did not raise \u2014 your job is synthesis: deduplicate overlapping findings, organize by severity, and write a short overall verdict. If any agents are listed as missing, explicitly say so near the top of the report, naming each one and the reason given. Respond with ONLY the Markdown report body \u2014 no preamble, no code fences around the whole thing.";
@@ -42669,52 +42249,78 @@ registerProvider(openaiAdapter);
 registerProvider(deepseekAdapter);
 registerProvider(kimiAdapter);
 
-// actions/validate-config/src/index.ts
+// actions/run-agent/src/index.ts
+var DEFAULT_TIMEOUT_SECONDS = 180;
+function redact(message, secret) {
+  if (!secret) return message;
+  return message.split(secret).join("[redacted]");
+}
 async function run() {
-  const configPath = core.getInput("config_path") || "swarm-reviewer.config.json";
-  const token = core.getInput("github_token", { required: true });
-  const { owner, repo } = context2.repo;
-  const ref = context2.payload.pull_request?.head?.sha;
-  const octokit = createGithubClient(token);
-  let raw;
+  const agentJson = core2.getInput("agent_json", { required: true });
+  const apiKey = core2.getInput("api_key", { required: true });
+  const configJson = core2.getInput("config_json", { required: true });
+  const token = core2.getInput("github_token", { required: true });
+  core2.setSecret(apiKey);
+  const agent = JSON.parse(agentJson);
+  const config = JSON.parse(configJson);
+  const timeoutSeconds = agent.timeoutSeconds ?? DEFAULT_TIMEOUT_SECONDS;
+  const timeoutMs = timeoutSeconds * 1e3;
+  const startedAt = Date.now();
+  let result;
   try {
-    raw = await readRepoFile(octokit, { owner, repo, path: configPath, ref });
-  } catch (err) {
-    core.setFailed(
-      `Could not read config file "${configPath}" in ${owner}/${repo}: ${err.message}`
-    );
-    return;
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (err) {
-    core.setFailed(`Config file "${configPath}" is not valid JSON: ${err.message}`);
-    return;
-  }
-  try {
-    const config = validateConfig(parsed, { knownProviders: knownProviderKeys() });
-    const aggregator = config.agents.find((a) => a.role === "aggregator");
-    const reviewerAgents = config.agents.filter((a) => a.role !== "aggregator");
-    const emailConfig = config.delivery?.email;
-    const emailEnabled = !!emailConfig && emailConfig.enabled !== false;
-    core.setOutput("config_json", JSON.stringify(config));
-    core.setOutput("reviewer_agents_json", JSON.stringify(reviewerAgents));
-    core.setOutput("aggregator_json", JSON.stringify(aggregator));
-    core.setOutput("email_api_key_secret", emailEnabled ? emailConfig.apiKeySecret ?? "" : "");
-    core.info(
-      `Configuration valid: ${reviewerAgents.length} reviewer agent(s) + 1 aggregator ("${aggregator.id}").`
-    );
-  } catch (err) {
-    if (err instanceof ConfigValidationError) {
-      core.setFailed(err.message);
-    } else {
-      core.setFailed(`Unexpected error validating configuration: ${err.message}`);
+    const adapter = getProvider(agent.provider);
+    if (!adapter) {
+      throw new Error(`No provider adapter registered for "${agent.provider}" (this should have been caught by validate-config).`);
     }
+    const { owner, repo } = context2.repo;
+    const pullRequest = context2.payload.pull_request;
+    if (!pullRequest) {
+      throw new Error("This action must run from a pull_request-triggered workflow_call; no pull_request payload found.");
+    }
+    const octokit = createGithubClient(token);
+    const { diff, diffTruncated } = await fetchPullRequestDiff(
+      octokit,
+      { owner, repo, pullNumber: pullRequest.number },
+      config.diff?.maxBytes ?? DEFAULT_MAX_DIFF_BYTES
+    );
+    const { findingSet, usage } = await adapter.review({
+      model: agent.model,
+      apiKey,
+      diff,
+      diffTruncated,
+      pullRequestContext: { title: pullRequest.title ?? "", description: pullRequest.body ?? "" },
+      timeoutMs
+    });
+    findingSet.agentId = agent.id;
+    findingSet.model = agent.model;
+    await writeJsonFile(AGENT_OUTPUT_DIR, FINDING_FILENAME, findingSet);
+    result = {
+      agentId: agent.id,
+      status: "succeeded",
+      durationMs: Date.now() - startedAt,
+      approxCost: usage?.inputTokens !== void 0 || usage?.outputTokens !== void 0 ? { inputTokens: usage?.inputTokens ?? 0, outputTokens: usage?.outputTokens ?? 0, estimatedUsd: null } : null,
+      error: null
+    };
+  } catch (err) {
+    const rawMessage = err instanceof Error ? err.message : String(err);
+    const message = redact(rawMessage, apiKey);
+    const status = /timed out/i.test(message) ? "timed_out" : "failed";
+    result = {
+      agentId: agent.id,
+      status,
+      durationMs: Date.now() - startedAt,
+      approxCost: null,
+      error: message
+    };
+  }
+  await writeJsonFile(AGENT_OUTPUT_DIR, AGENT_RESULT_FILENAME, result);
+  logAgentResult(result);
+  if (result.status !== "succeeded") {
+    core2.setFailed(`Agent "${agent.id}" ${result.status}: ${result.error}`);
   }
 }
 run().catch((err) => {
-  core.setFailed(`swarm-reviewer validate-config crashed: ${err.message}`);
+  core2.setFailed(`swarm-reviewer run-agent crashed: ${err.message}`);
 });
 /*! Bundled license information:
 

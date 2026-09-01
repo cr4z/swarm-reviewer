@@ -76,20 +76,20 @@ same comment rather than adding a new one.
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Implement `src/providers/anthropic.ts` — Claude `ProviderAdapter`, implementing both `review()` and `aggregate()` (depends on T011)
-- [ ] T017 [P] [US1] Implement `src/providers/openai.ts` — ChatGPT `ProviderAdapter` (depends on T011)
-- [ ] T018 [P] [US1] Implement `src/providers/deepseek.ts` — DeepSeek `ProviderAdapter` (OpenAI-compatible chat-completions shape, own base URL/model passthrough) (depends on T011)
-- [ ] T019 [P] [US1] Implement `src/providers/kimi.ts` — Moonshot AI (Kimi) `ProviderAdapter` (OpenAI-compatible chat-completions shape, own base URL/model passthrough) (depends on T011)
-- [ ] T020 [US1] Register all four adapters (anthropic, openai, deepseek, kimi) in `src/providers/registry.ts` (depends on T016, T017, T018, T019, T012)
-- [ ] T021 [US1] Implement `actions/run-agent/action.yml` + entry — resolve `secrets[matrix.agent.apiKeySecret]`, fetch/truncate the diff via T008, call the matching adapter's `review()` with `timeoutSeconds`, write `finding-<agentId>.json` as a build artifact, record an `AgentResult` via T010 even on failure (depends on T008, T009, T010, T020)
-- [ ] T022 [US1] Implement `actions/aggregate/action.yml` + entry — download all `finding-*` artifacts, call the aggregator agent's adapter `aggregate()`, build a `UnifiedReport` whose `body` starts with the `<!-- swarm-reviewer:report:v1 -->` marker (depends on T020)
-- [ ] T023 [P] [US1] Implement `src/delivery/pr-comment.ts` — list PR issue comments, find one whose body starts with the marker, `PATCH` it if found else `POST` a new one (research.md #3, FR-010) (depends on T009, T013)
-- [ ] T024 [P] [US1] Implement `src/delivery/email-providers/resend.ts` — POST a `UnifiedReport` render to the Resend HTTP API (depends on T013)
-- [ ] T025 [US1] Implement `src/delivery/email.ts` — dispatches to the configured email provider adapter (depends on T024)
-- [ ] T026 [US1] Register `pr-comment` and `email` channels in `src/delivery/registry.ts` (depends on T023, T025, T014)
-- [ ] T027 [US1] Implement `actions/deliver/action.yml` + entry — invoke every channel enabled in config from the registry, isolate each in its own try/catch, collect `DeliveryOutcome[]` and log via T010 (FR-009) (depends on T014, T026, T010)
-- [ ] T028 [US1] Implement `.github/workflows/review.yml` — the `workflow_call` entrypoint wiring `validate-config` → matrix over `agents[]` (`fail-fast: false`) running `run-agent` → `aggregate` (`if: always()`) → `deliver`, matching `contracts/workflow-call-contract.md`'s inputs (depends on T015, T021, T022, T027)
-- [ ] T029 [US1] Run `npm run build` and commit the resulting `dist/index.js` for `validate-config`, `run-agent`, `aggregate`, `deliver` (depends on T028)
+- [X] T016 [P] [US1] Implement `src/providers/anthropic.ts` — Claude `ProviderAdapter`, implementing both `review()` and `aggregate()` (depends on T011)
+- [X] T017 [P] [US1] Implement `src/providers/openai.ts` — ChatGPT `ProviderAdapter` (depends on T011)
+- [X] T018 [P] [US1] Implement `src/providers/deepseek.ts` — DeepSeek `ProviderAdapter` (OpenAI-compatible chat-completions shape, own base URL/model passthrough) (depends on T011)
+- [X] T019 [P] [US1] Implement `src/providers/kimi.ts` — Moonshot AI (Kimi) `ProviderAdapter` (OpenAI-compatible chat-completions shape, own base URL/model passthrough) (depends on T011)
+- [X] T020 [US1] Register all four adapters (anthropic, openai, deepseek, kimi) in `src/providers/registry.ts` (depends on T016, T017, T018, T019, T012)
+- [X] T021 [US1] Implement `actions/run-agent/action.yml` + entry — resolve `secrets[matrix.agent.apiKeySecret]`, fetch/truncate the diff via T008, call the matching adapter's `review()` with `timeoutSeconds`, write `finding-<agentId>.json` as a build artifact, record an `AgentResult` via T010 even on failure (depends on T008, T009, T010, T020)
+- [X] T022 [US1] Implement `actions/aggregate/action.yml` + entry — download all `finding-*` artifacts, call the aggregator agent's adapter `aggregate()`, build a `UnifiedReport` whose `body` starts with the `<!-- swarm-reviewer:report:v1 -->` marker (depends on T020)
+- [X] T023 [P] [US1] Implement `src/delivery/pr-comment.ts` — list PR issue comments, find one whose body starts with the marker, `PATCH` it if found else `POST` a new one (research.md #3, FR-010) (depends on T009, T013)
+- [X] T024 [P] [US1] Implement `src/delivery/email-providers/resend.ts` — POST a `UnifiedReport` render to the Resend HTTP API (depends on T013)
+- [X] T025 [US1] Implement `src/delivery/email.ts` — dispatches to the configured email provider adapter (depends on T024)
+- [X] T026 [US1] Register `pr-comment` and `email` channels in `src/delivery/registry.ts` (depends on T023, T025, T014)
+- [X] T027 [US1] Implement `actions/deliver/action.yml` + entry — invoke every channel enabled in config from the registry, isolate each in its own try/catch, collect `DeliveryOutcome[]` and log via T010 (FR-009) (depends on T014, T026, T010)
+- [X] T028 [US1] Implement `.github/workflows/review.yml` — the `workflow_call` entrypoint wiring `validate-config` → matrix over `agents[]` (`fail-fast: false`) running `run-agent` → `aggregate` (`if: always()`) → `deliver`, matching `contracts/workflow-call-contract.md`'s inputs (depends on T015, T021, T022, T027)
+- [X] T029 [US1] Run `npm run build` and commit the resulting `dist/index.js` for `validate-config`, `run-agent`, `aggregate`, `deliver` (depends on T028)
 
 **Checkpoint**: User Story 1 is fully functional and independently testable via quickstart.md — all four MVP providers already work end-to-end.
 

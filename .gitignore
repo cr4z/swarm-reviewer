@@ -8,6 +8,10 @@ out/
 # Test/coverage
 coverage/
 
+# Runtime scratch dirs used by actions/{run-agent,aggregate,deliver} — never committed
+swarm-reviewer-out/
+swarm-reviewer-in/
+
 # Logs
 *.log
 npm-debug.log*
