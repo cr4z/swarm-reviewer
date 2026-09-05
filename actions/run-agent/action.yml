@@ -5,8 +5,8 @@ inputs:
     description: "JSON-encoded ReviewAgentConfig for this matrix leg."
     required: true
   api_key:
-    description: "Resolved credential for this agent (from secrets[matrix.agent.apiKeySecret])."
-    required: true
+    description: "Resolved credential for this agent (from secrets[matrix.agent.apiKeySecret]). Omitted for a WIF (\"auth\") agent, which obtains its own credential at run time instead."
+    required: false
   config_json:
     description: "The whole validated configuration (used for diff.maxBytes)."
     required: true

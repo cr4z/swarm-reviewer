@@ -5,7 +5,9 @@ import { fetchPullRequestDiff, DEFAULT_MAX_DIFF_BYTES } from "../../../src/lib/d
 import { logAgentResult } from "../../../src/lib/observability.js";
 import { AGENT_OUTPUT_DIR, AGENT_RESULT_FILENAME, FINDING_FILENAME, writeJsonFile } from "../../../src/lib/agent-io.js";
 import { getProvider } from "../../../src/providers/registry.js";
+import { exchangeGithubOidcForAnthropicToken, WIF_AUDIENCE } from "../../../src/lib/federation.js";
 import type { ReviewAgentConfig, SwarmReviewerConfig } from "../../../src/config/schema.js";
+import type { AuthScheme } from "../../../src/providers/types.js";
 import type { AgentResult, AgentResultStatus } from "../../../src/lib/types.js";
 import "../../../src/providers/all.js"; // registers every MVP provider adapter (side effect)
 
@@ -18,11 +20,11 @@ function redact(message: string, secret: string): string {
 
 async function run(): Promise<void> {
   const agentJson = core.getInput("agent_json", { required: true });
-  const apiKey = core.getInput("api_key", { required: true });
+  const apiKeyInput = core.getInput("api_key"); // required only for an apiKeySecret agent
   const configJson = core.getInput("config_json", { required: true });
   const token = core.getInput("github_token", { required: true });
 
-  core.setSecret(apiKey); // defensive — secrets sourced via secrets[] should already be masked
+  if (apiKeyInput) core.setSecret(apiKeyInput); // defensive — secrets sourced via secrets[] should already be masked
 
   const agent = JSON.parse(agentJson) as ReviewAgentConfig;
   const config = JSON.parse(configJson) as SwarmReviewerConfig;
@@ -31,6 +33,9 @@ async function run(): Promise<void> {
 
   const startedAt = Date.now();
   let result: AgentResult;
+  // Whichever credential this run actually used, resolved inside the try block below —
+  // kept in outer scope so the catch block can redact it from any thrown error message.
+  let credentialValue = "";
 
   try {
     const adapter = getProvider(agent.provider);
@@ -44,6 +49,25 @@ async function run(): Promise<void> {
       throw new Error("This action must run from a pull_request-triggered workflow_call; no pull_request payload found.");
     }
 
+    let authScheme: AuthScheme | undefined;
+    if (agent.auth) {
+      // Federation auth (spec 002): exchange GitHub's own OIDC identity for a short-lived
+      // Anthropic access token. Requires the job to have `permissions: id-token: write`.
+      const githubOidcToken = await core.getIDToken(WIF_AUDIENCE);
+      const { accessToken } = await exchangeGithubOidcForAnthropicToken({
+        githubOidcToken,
+        federationRuleId: agent.auth.federationRuleId,
+        organizationId: agent.auth.organizationId,
+        serviceAccountId: agent.auth.serviceAccountId,
+        workspaceId: agent.auth.workspaceId,
+      });
+      core.setSecret(accessToken);
+      credentialValue = accessToken;
+      authScheme = "bearer";
+    } else {
+      credentialValue = apiKeyInput;
+    }
+
     const octokit = createGithubClient(token);
     const { diff, diffTruncated } = await fetchPullRequestDiff(
       octokit,
@@ -53,7 +77,8 @@ async function run(): Promise<void> {
 
     const { findingSet, usage } = await adapter.review({
       model: agent.model,
-      apiKey,
+      apiKey: credentialValue,
+      authScheme,
       diff,
       diffTruncated,
       pullRequestContext: { title: pullRequest.title ?? "", description: pullRequest.body ?? "" },
@@ -76,7 +101,7 @@ async function run(): Promise<void> {
     };
   } catch (err) {
     const rawMessage = err instanceof Error ? err.message : String(err);
-    const message = redact(rawMessage, apiKey);
+    const message = redact(rawMessage, credentialValue);
     const status: AgentResultStatus = /timed out/i.test(message) ? "timed_out" : "failed";
     result = {
       agentId: agent.id,

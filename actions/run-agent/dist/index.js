@@ -30125,12 +30125,12 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env[`STATE_${name}`] || "";
     }
     exports.getState = getState;
-    function getIDToken(aud) {
+    function getIDToken2(aud) {
       return __awaiter2(this, void 0, void 0, function* () {
         return yield oidc_utils_1.OidcClient.getIDToken(aud);
       });
     }
-    exports.getIDToken = getIDToken;
+    exports.getIDToken = getIDToken2;
     var summary_1 = require_summary();
     Object.defineProperty(exports, "summary", { enumerable: true, get: function() {
       return summary_1.summary;
@@ -41921,6 +41921,45 @@ function getProvider(key) {
   return adapters.get(key);
 }
 
+// src/lib/federation.ts
+var TOKEN_ENDPOINT = "https://api.anthropic.com/v1/oauth/token";
+var GRANT_TYPE = "urn:ietf:params:oauth:grant-type:jwt-bearer";
+var WIF_AUDIENCE = "https://api.anthropic.com";
+async function exchangeGithubOidcForAnthropicToken(params) {
+  const body = {
+    grant_type: GRANT_TYPE,
+    assertion: params.githubOidcToken,
+    federation_rule_id: params.federationRuleId,
+    organization_id: params.organizationId,
+    service_account_id: params.serviceAccountId
+  };
+  if (params.workspaceId) {
+    body.workspace_id = params.workspaceId;
+  }
+  let response;
+  try {
+    response = await fetch(TOKEN_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body)
+    });
+  } catch (err) {
+    throw new Error(
+      `Federation token exchange request failed: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+  if (!response.ok) {
+    throw new Error(
+      `Federation token exchange rejected (HTTP ${response.status}). Check the federation rule, organization/service-account IDs, and that the GitHub Actions job has id-token: write.`
+    );
+  }
+  const data = await response.json();
+  if (!data.access_token || typeof data.expires_in !== "number") {
+    throw new Error("Federation token exchange succeeded but the response was missing access_token/expires_in.");
+  }
+  return { accessToken: data.access_token, expiresInSeconds: data.expires_in };
+}
+
 // src/providers/prompts.ts
 var import_ajv = __toESM(require_ajv(), 1);
 
@@ -42026,13 +42065,14 @@ var ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 var ANTHROPIC_VERSION = "2023-06-01";
 var MAX_TOKENS = 4096;
 async function callAnthropic(params) {
+  const authHeaders = params.authScheme === "bearer" ? { authorization: `Bearer ${params.apiKey}` } : { "x-api-key": params.apiKey };
   const response = await fetchWithTimeout(
     ANTHROPIC_API_URL,
     {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": params.apiKey,
+        ...authHeaders,
         "anthropic-version": ANTHROPIC_VERSION
       },
       body: JSON.stringify({
@@ -42060,6 +42100,7 @@ var anthropicAdapter = {
     const { system, user } = buildReviewPrompt(request2);
     const { text, usage } = await callAnthropic({
       apiKey: request2.apiKey,
+      authScheme: request2.authScheme,
       model: request2.model,
       system,
       user,
@@ -42071,6 +42112,7 @@ var anthropicAdapter = {
     const { system, user } = buildAggregatePrompt(request2);
     const { text, usage } = await callAnthropic({
       apiKey: request2.apiKey,
+      authScheme: request2.authScheme,
       model: request2.model,
       system,
       user,
@@ -42257,16 +42299,17 @@ function redact(message, secret) {
 }
 async function run() {
   const agentJson = core2.getInput("agent_json", { required: true });
-  const apiKey = core2.getInput("api_key", { required: true });
+  const apiKeyInput = core2.getInput("api_key");
   const configJson = core2.getInput("config_json", { required: true });
   const token = core2.getInput("github_token", { required: true });
-  core2.setSecret(apiKey);
+  if (apiKeyInput) core2.setSecret(apiKeyInput);
   const agent = JSON.parse(agentJson);
   const config = JSON.parse(configJson);
   const timeoutSeconds = agent.timeoutSeconds ?? DEFAULT_TIMEOUT_SECONDS;
   const timeoutMs = timeoutSeconds * 1e3;
   const startedAt = Date.now();
   let result;
+  let credentialValue = "";
   try {
     const adapter = getProvider(agent.provider);
     if (!adapter) {
@@ -42277,6 +42320,22 @@ async function run() {
     if (!pullRequest) {
       throw new Error("This action must run from a pull_request-triggered workflow_call; no pull_request payload found.");
     }
+    let authScheme;
+    if (agent.auth) {
+      const githubOidcToken = await core2.getIDToken(WIF_AUDIENCE);
+      const { accessToken } = await exchangeGithubOidcForAnthropicToken({
+        githubOidcToken,
+        federationRuleId: agent.auth.federationRuleId,
+        organizationId: agent.auth.organizationId,
+        serviceAccountId: agent.auth.serviceAccountId,
+        workspaceId: agent.auth.workspaceId
+      });
+      core2.setSecret(accessToken);
+      credentialValue = accessToken;
+      authScheme = "bearer";
+    } else {
+      credentialValue = apiKeyInput;
+    }
     const octokit = createGithubClient(token);
     const { diff, diffTruncated } = await fetchPullRequestDiff(
       octokit,
@@ -42285,7 +42344,8 @@ async function run() {
     );
     const { findingSet, usage } = await adapter.review({
       model: agent.model,
-      apiKey,
+      apiKey: credentialValue,
+      authScheme,
       diff,
       diffTruncated,
       pullRequestContext: { title: pullRequest.title ?? "", description: pullRequest.body ?? "" },
@@ -42303,7 +42363,7 @@ async function run() {
     };
   } catch (err) {
     const rawMessage = err instanceof Error ? err.message : String(err);
-    const message = redact(rawMessage, apiKey);
+    const message = redact(rawMessage, credentialValue);
     const status = /timed out/i.test(message) ? "timed_out" : "failed";
     result = {
       agentId: agent.id,

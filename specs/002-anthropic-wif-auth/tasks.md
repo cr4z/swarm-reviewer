@@ -29,11 +29,11 @@ modifies an existing file unless marked otherwise. No new project structure is i
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T001 [P] Implement `src/lib/federation.ts` — `exchangeGithubOidcForAnthropicToken()`: one `POST https://api.anthropic.com/v1/oauth/token` per `contracts/federation-auth-contract.md`, returning `{accessToken, expiresInSeconds}`; never includes the JWT or response body verbatim in a thrown error message
-- [ ] T002 Update `src/config/schema.ts` — make `apiKeySecret` optional on `reviewAgent`, add the `federationAuth` `$def` (`type`, `federationRuleId`, `organizationId`, `serviceAccountId`, optional `workspaceId`) and a `properties.auth` reference to it, per `contracts/federation-auth-contract.md` (depends on nothing, but precedes T003)
-- [ ] T003 Update `src/config/validate.ts` — add: exactly one of `apiKeySecret`/`auth` per agent (FR-004), `auth` only valid when `provider === "anthropic"` (FR-002); both errors name the specific offending agent (depends on T002)
-- [ ] T004 [P] Update `src/providers/types.ts` — add optional `authScheme?: "api_key" | "bearer"` to `ReviewRequest` and `AggregateRequest` per `contracts/federation-auth-contract.md`
-- [ ] T005 Update `src/providers/anthropic.ts` — `callAnthropic` sends `x-api-key` when `authScheme` is `"api_key"`/omitted (unchanged default) or `Authorization: Bearer <apiKey>` when `authScheme === "bearer"` (depends on T004)
+- [X] T001 [P] Implement `src/lib/federation.ts` — `exchangeGithubOidcForAnthropicToken()`: one `POST https://api.anthropic.com/v1/oauth/token` per `contracts/federation-auth-contract.md`, returning `{accessToken, expiresInSeconds}`; never includes the JWT or response body verbatim in a thrown error message
+- [X] T002 Update `src/config/schema.ts` — make `apiKeySecret` optional on `reviewAgent`, add the `federationAuth` `$def` (`type`, `federationRuleId`, `organizationId`, `serviceAccountId`, optional `workspaceId`) and a `properties.auth` reference to it, per `contracts/federation-auth-contract.md` (depends on nothing, but precedes T003)
+- [X] T003 Update `src/config/validate.ts` — add: exactly one of `apiKeySecret`/`auth` per agent (FR-004), `auth` only valid when `provider === "anthropic"` (FR-002); both errors name the specific offending agent (depends on T002)
+- [X] T004 [P] Update `src/providers/types.ts` — add optional `authScheme?: "api_key" | "bearer"` to `ReviewRequest` and `AggregateRequest` per `contracts/federation-auth-contract.md`
+- [X] T005 Update `src/providers/anthropic.ts` — `callAnthropic` sends `x-api-key` when `authScheme` is `"api_key"`/omitted (unchanged default) or `Authorization: Bearer <apiKey>` when `authScheme === "bearer"` (depends on T004)
 
 **Checkpoint**: Config accepts the new `auth` block with correct validation; `anthropic.ts` compiles against the extended request types. No agent can actually use WIF yet (that's US1).
 
@@ -51,10 +51,10 @@ anywhere in logs/artifacts.
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Update `actions/run-agent/src/index.ts` — when `agent.auth` is present: call `@actions/core`'s `getIDToken("https://api.anthropic.com")`, then `exchangeGithubOidcForAnthropicToken()` (T001) with the agent's `auth` fields, then call the adapter's `review()` with `apiKey: result.accessToken, authScheme: "bearer"`; when `agent.apiKeySecret` is present, behavior is unchanged (`authScheme` omitted) (depends on T001, T003, T005)
-- [ ] T007 [US1] Update `actions/aggregate/src/index.ts` — identical resolution for the single aggregator agent, since it may also use `auth` (data-model.md) (depends on T001, T003, T005)
-- [ ] T008 [US1] Update `.github/workflows/review.yml` — add a job-scoped `permissions: { id-token: write }` to the `review` job and the `aggregate` job (research.md #4); leave `validate` and `deliver` unchanged (depends on T006, T007)
-- [ ] T009 [US1] Run `npm run build` and commit the rebuilt `dist/index.js` for `run-agent` and `aggregate` (depends on T008)
+- [X] T006 [US1] Update `actions/run-agent/src/index.ts` — when `agent.auth` is present: call `@actions/core`'s `getIDToken("https://api.anthropic.com")`, then `exchangeGithubOidcForAnthropicToken()` (T001) with the agent's `auth` fields, then call the adapter's `review()` with `apiKey: result.accessToken, authScheme: "bearer"`; when `agent.apiKeySecret` is present, behavior is unchanged (`authScheme` omitted) (depends on T001, T003, T005)
+- [X] T007 [US1] Update `actions/aggregate/src/index.ts` — identical resolution for the single aggregator agent, since it may also use `auth` (data-model.md) (depends on T001, T003, T005)
+- [X] T008 [US1] Update `.github/workflows/review.yml` — add a job-scoped `permissions: { id-token: write }` to the `review` job and the `aggregate` job (research.md #4); leave `validate` and `deliver` unchanged (depends on T006, T007)
+- [X] T009 [US1] Run `npm run build` and commit the rebuilt `dist/index.js` for `run-agent` and `aggregate` (depends on T008)
 
 **Checkpoint**: An anthropic agent can authenticate via WIF end-to-end; `apiKeySecret` agents are provably untouched by this phase's diff (git diff shows no change to their code path).
 

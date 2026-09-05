@@ -11,8 +11,8 @@ inputs:
     description: "JSON array of the configured reviewer agents — used to compute agentsMissing (FR-006)."
     required: true
   aggregator_api_key:
-    description: "Resolved credential for the agent with role \"aggregator\"."
-    required: true
+    description: "Resolved credential for the agent with role \"aggregator\". Omitted when the aggregator uses WIF (\"auth\"), which obtains its own credential at run time instead."
+    required: false
   github_token:
     description: "Token used to read PR context."
     required: true

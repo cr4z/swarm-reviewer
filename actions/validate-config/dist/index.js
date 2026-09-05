@@ -42247,15 +42247,30 @@ var configSchema = {
   $defs: {
     reviewAgent: {
       type: "object",
-      required: ["id", "provider", "model", "apiKeySecret"],
+      // apiKeySecret is NOT listed as required here — an agent may instead supply `auth`
+      // (WIF). Exactly-one-of enforcement is programmatic (see the note above).
+      required: ["id", "provider", "model"],
       additionalProperties: false,
       properties: {
         id: { type: "string", pattern: "^[a-zA-Z0-9_-]+$" },
         provider: { type: "string" },
         model: { type: "string" },
         apiKeySecret: { type: "string", minLength: 1 },
+        auth: { $ref: "#/$defs/federationAuth" },
         role: { type: "string", enum: ["reviewer", "aggregator"], default: "reviewer" },
         timeoutSeconds: { type: "integer", minimum: 1, default: 180 }
+      }
+    },
+    federationAuth: {
+      type: "object",
+      required: ["type", "federationRuleId", "organizationId", "serviceAccountId"],
+      additionalProperties: false,
+      properties: {
+        type: { const: "wif" },
+        federationRuleId: { type: "string", minLength: 1 },
+        organizationId: { type: "string", minLength: 1 },
+        serviceAccountId: { type: "string", minLength: 1 },
+        workspaceId: { type: "string", minLength: 1 }
       }
     }
   }
@@ -42297,8 +42312,25 @@ function validateConfig(raw, options) {
         `Agent "${agent.id}" declares unknown provider "${agent.provider}". Known providers: ${options.knownProviders.join(", ") || "(none registered)"}.`
       );
     }
-    if (!agent.apiKeySecret.trim()) {
+    const hasApiKeySecret = agent.apiKeySecret !== void 0;
+    const hasAuth = agent.auth !== void 0;
+    if (hasApiKeySecret && hasAuth) {
+      throw new ConfigValidationError(
+        `Agent "${agent.id}" declares both "apiKeySecret" and "auth" \u2014 exactly one auth mode is allowed per agent.`
+      );
+    }
+    if (!hasApiKeySecret && !hasAuth) {
+      throw new ConfigValidationError(
+        `Agent "${agent.id}" declares neither "apiKeySecret" nor "auth" \u2014 exactly one auth mode is required per agent.`
+      );
+    }
+    if (hasApiKeySecret && !agent.apiKeySecret.trim()) {
       throw new ConfigValidationError(`Agent "${agent.id}" has an empty "apiKeySecret".`);
+    }
+    if (hasAuth && agent.provider !== "anthropic") {
+      throw new ConfigValidationError(
+        `Agent "${agent.id}" declares "auth" (federation) but provider is "${agent.provider}" \u2014 federation auth is only supported for provider "anthropic".`
+      );
     }
   }
   const aggregators = config.agents.filter((a) => a.role === "aggregator");
@@ -42446,13 +42478,14 @@ var ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 var ANTHROPIC_VERSION = "2023-06-01";
 var MAX_TOKENS = 4096;
 async function callAnthropic(params) {
+  const authHeaders = params.authScheme === "bearer" ? { authorization: `Bearer ${params.apiKey}` } : { "x-api-key": params.apiKey };
   const response = await fetchWithTimeout(
     ANTHROPIC_API_URL,
     {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": params.apiKey,
+        ...authHeaders,
         "anthropic-version": ANTHROPIC_VERSION
       },
       body: JSON.stringify({
@@ -42480,6 +42513,7 @@ var anthropicAdapter = {
     const { system, user } = buildReviewPrompt(request2);
     const { text, usage } = await callAnthropic({
       apiKey: request2.apiKey,
+      authScheme: request2.authScheme,
       model: request2.model,
       system,
       user,
@@ -42491,6 +42525,7 @@ var anthropicAdapter = {
     const { system, user } = buildAggregatePrompt(request2);
     const { text, usage } = await callAnthropic({
       apiKey: request2.apiKey,
+      authScheme: request2.authScheme,
       model: request2.model,
       system,
       user,

@@ -10,11 +10,20 @@ export interface PullRequestContext {
   description: string;
 }
 
+/**
+ * Which header style `apiKey` should be sent with. Defaults to `"api_key"` (unchanged
+ * behavior). `"bearer"` is used for a WIF-minted access token (spec 002,
+ * contracts/federation-auth-contract.md) — currently only ever set by the caller for the
+ * anthropic adapter, which is the only one that branches on it.
+ */
+export type AuthScheme = "api_key" | "bearer";
+
 export interface ReviewRequest {
   /** ReviewAgent.model, passed through opaquely. */
   model: string;
-  /** Resolved secret value. Adapters must never log this or include it in a thrown error. */
+  /** Resolved secret value, or a WIF-minted access token. Never log this or include it in a thrown error. */
   apiKey: string;
+  authScheme?: AuthScheme;
   diff: string;
   diffTruncated: boolean;
   pullRequestContext: PullRequestContext;
@@ -34,6 +43,7 @@ export interface ReviewResponse {
 export interface AggregateRequest {
   model: string;
   apiKey: string;
+  authScheme?: AuthScheme;
   findingSets: FindingSet[];
   missingAgents: { agentId: string; reason: string }[];
   diffTruncated: boolean;

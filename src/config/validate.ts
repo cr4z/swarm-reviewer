@@ -62,8 +62,31 @@ export function validateConfig(raw: unknown, options: ValidateConfigOptions): Sw
       );
     }
 
-    if (!agent.apiKeySecret.trim()) {
+    // Exactly one auth mode per agent (spec 002 FR-004): apiKeySecret (default) or auth (WIF).
+    const hasApiKeySecret = agent.apiKeySecret !== undefined;
+    const hasAuth = agent.auth !== undefined;
+
+    if (hasApiKeySecret && hasAuth) {
+      throw new ConfigValidationError(
+        `Agent "${agent.id}" declares both "apiKeySecret" and "auth" — exactly one auth mode is allowed per agent.`,
+      );
+    }
+    if (!hasApiKeySecret && !hasAuth) {
+      throw new ConfigValidationError(
+        `Agent "${agent.id}" declares neither "apiKeySecret" nor "auth" — exactly one auth mode is required per agent.`,
+      );
+    }
+
+    if (hasApiKeySecret && !agent.apiKeySecret!.trim()) {
       throw new ConfigValidationError(`Agent "${agent.id}" has an empty "apiKeySecret".`);
+    }
+
+    // Federation auth is anthropic-only for this feature (spec 002 FR-002).
+    if (hasAuth && agent.provider !== "anthropic") {
+      throw new ConfigValidationError(
+        `Agent "${agent.id}" declares "auth" (federation) but provider is "${agent.provider}" — ` +
+          'federation auth is only supported for provider "anthropic".',
+      );
     }
   }
 

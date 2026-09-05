@@ -33,6 +33,13 @@ jobs:
     name: Run agent (${{ matrix.agent.id }})
     needs: validate
     runs-on: ubuntu-latest
+    # Job-level permissions replace the workflow-level block above for this job, so both
+    # of this job's actual needs are listed explicitly. id-token:write is granted
+    # unconditionally (permissions are static YAML, evaluated before any config is read) —
+    # it is only ever exercised for an agent whose config specifies `auth` (WIF), spec 002.
+    permissions:
+      pull-requests: read
+      id-token: write
     strategy:
       fail-fast: false # Principle II — one agent's failure must not cancel the others
       matrix:
@@ -41,7 +48,7 @@ jobs:
       - uses: ./actions/run-agent
         with:
           agent_json: ${{ toJSON(matrix.agent) }}
-          api_key: ${{ secrets[matrix.agent.apiKeySecret] }}
+          api_key: ${{ matrix.agent.apiKeySecret && secrets[matrix.agent.apiKeySecret] || '' }}
           config_json: ${{ needs.validate.outputs.config_json }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -52,6 +59,11 @@ jobs:
     # matrix (Principle III) — but never if validate itself failed (nothing to aggregate).
     if: ${{ !cancelled() && needs.validate.result == 'success' }}
     runs-on: ubuntu-latest
+    # See the `review` job's comment above — same reasoning, since the aggregator agent may
+    # also use `auth` (WIF), and this job fetches the diff itself (research.md #4 in spec 001).
+    permissions:
+      pull-requests: read
+      id-token: write
     outputs:
       report_produced: ${{ steps.aggregate.outputs.report_produced }}
     steps:
@@ -61,7 +73,7 @@ jobs:
           config_json: ${{ needs.validate.outputs.config_json }}
           aggregator_json: ${{ needs.validate.outputs.aggregator_json }}
           reviewer_agents_json: ${{ needs.validate.outputs.reviewer_agents_json }}
-          aggregator_api_key: ${{ secrets[fromJSON(needs.validate.outputs.aggregator_json).apiKeySecret] }}
+          aggregator_api_key: ${{ fromJSON(needs.validate.outputs.aggregator_json).apiKeySecret && secrets[fromJSON(needs.validate.outputs.aggregator_json).apiKeySecret] || '' }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   deliver:

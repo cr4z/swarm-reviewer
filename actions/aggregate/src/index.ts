@@ -10,7 +10,9 @@ import {
   REPORT_FILENAME,
 } from "../../../src/lib/agent-io.js";
 import { writeRunSummary } from "../../../src/lib/observability.js";
+import { exchangeGithubOidcForAnthropicToken, WIF_AUDIENCE } from "../../../src/lib/federation.js";
 import type { ReviewAgentConfig, SwarmReviewerConfig } from "../../../src/config/schema.js";
+import type { AuthScheme } from "../../../src/providers/types.js";
 import type { AgentResult, FindingSet } from "../../../src/lib/types.js";
 import "../../../src/providers/all.js"; // registers every MVP provider adapter (side effect)
 
@@ -28,10 +30,10 @@ async function run(): Promise<void> {
   const reviewerAgents = JSON.parse(
     core.getInput("reviewer_agents_json", { required: true }),
   ) as ReviewAgentConfig[];
-  const aggregatorApiKey = core.getInput("aggregator_api_key", { required: true });
+  const aggregatorApiKeyInput = core.getInput("aggregator_api_key"); // required only when aggregator.apiKeySecret is set
   const token = core.getInput("github_token", { required: true });
 
-  core.setSecret(aggregatorApiKey);
+  if (aggregatorApiKeyInput) core.setSecret(aggregatorApiKeyInput);
 
   const findingSets = await readAllJsonFiles<FindingSet>("swarm-reviewer-in/findings", "finding.json");
   const reviewerResults = await readAllJsonFiles<AgentResult>(
@@ -87,11 +89,33 @@ async function run(): Promise<void> {
 
   const startedAt = Date.now();
   let aggregatorResult: AgentResult;
+  // Whichever credential this run actually used, resolved inside the try block below —
+  // kept in outer scope so the catch block can redact it from any thrown error message.
+  let credentialValue = "";
 
   try {
+    let authScheme: AuthScheme | undefined;
+    if (aggregator.auth) {
+      // Federation auth (spec 002) — same exchange as run-agent's, for the aggregator agent.
+      const githubOidcToken = await core.getIDToken(WIF_AUDIENCE);
+      const { accessToken } = await exchangeGithubOidcForAnthropicToken({
+        githubOidcToken,
+        federationRuleId: aggregator.auth.federationRuleId,
+        organizationId: aggregator.auth.organizationId,
+        serviceAccountId: aggregator.auth.serviceAccountId,
+        workspaceId: aggregator.auth.workspaceId,
+      });
+      core.setSecret(accessToken);
+      credentialValue = accessToken;
+      authScheme = "bearer";
+    } else {
+      credentialValue = aggregatorApiKeyInput;
+    }
+
     const { report, usage } = await adapter.aggregate({
       model: aggregator.model,
-      apiKey: aggregatorApiKey,
+      apiKey: credentialValue,
+      authScheme,
       findingSets,
       missingAgents,
       diffTruncated,
@@ -116,7 +140,7 @@ async function run(): Promise<void> {
       error: null,
     };
   } catch (err) {
-    const message = redact(err instanceof Error ? err.message : String(err), aggregatorApiKey);
+    const message = redact(err instanceof Error ? err.message : String(err), credentialValue);
     aggregatorResult = {
       agentId: aggregator.id,
       status: /timed out/i.test(message) ? "timed_out" : "failed",

@@ -1,4 +1,4 @@
-import type { AggregateRequest, AggregateResponse, ProviderAdapter, ReviewRequest, ReviewResponse } from "./types.js";
+import type { AggregateRequest, AggregateResponse, AuthScheme, ProviderAdapter, ReviewRequest, ReviewResponse } from "./types.js";
 import { buildAggregatePrompt, buildReviewPrompt, parseReviewResponse } from "./prompts.js";
 import { fetchWithTimeout } from "./http.js";
 
@@ -13,18 +13,26 @@ interface AnthropicMessageResponse {
 
 async function callAnthropic(params: {
   apiKey: string;
+  authScheme?: AuthScheme;
   model: string;
   system: string;
   user: string;
   timeoutMs: number;
 }): Promise<{ text: string; usage?: { inputTokens?: number; outputTokens?: number } }> {
+  // "bearer" is a WIF-minted access token (spec 002); default "api_key" is unchanged
+  // apiKeySecret behavior (spec 001).
+  const authHeaders: Record<string, string> =
+    params.authScheme === "bearer"
+      ? { authorization: `Bearer ${params.apiKey}` }
+      : { "x-api-key": params.apiKey };
+
   const response = await fetchWithTimeout(
     ANTHROPIC_API_URL,
     {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": params.apiKey,
+        ...authHeaders,
         "anthropic-version": ANTHROPIC_VERSION,
       },
       body: JSON.stringify({
@@ -58,6 +66,7 @@ export const anthropicAdapter: ProviderAdapter = {
     const { system, user } = buildReviewPrompt(request);
     const { text, usage } = await callAnthropic({
       apiKey: request.apiKey,
+      authScheme: request.authScheme,
       model: request.model,
       system,
       user,
@@ -70,6 +79,7 @@ export const anthropicAdapter: ProviderAdapter = {
     const { system, user } = buildAggregatePrompt(request);
     const { text, usage } = await callAnthropic({
       apiKey: request.apiKey,
+      authScheme: request.authScheme,
       model: request.model,
       system,
       user,
