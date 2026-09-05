@@ -98,9 +98,9 @@ produces a partial/misleading report.
 
 **Purpose**: Automated test coverage and live validation before this lands on `main`.
 
-- [ ] T013 [P] Add `tests/unit/federation.test.ts` (Vitest) covering `exchangeGithubOidcForAnthropicToken()` against a mocked `fetch`: success shape, a 401 `authentication_error` response, and confirm no thrown error contains the input JWT
-- [ ] T014 [P] Add cases to `tests/unit/config.test.ts`: agent with both `apiKeySecret` and `auth` (rejected), agent with neither (rejected), non-anthropic agent with `auth` (rejected, FR-002), anthropic agent with `auth` only (accepted)
-- [ ] T015 [P] Add cases to `tests/unit/providers.test.ts`: `anthropic.ts` sends `x-api-key` when `authScheme` is omitted (regression guard) and `Authorization: Bearer` when `authScheme: "bearer"`
+- [X] T013 [P] Add `tests/unit/federation.test.ts` (Vitest) covering `exchangeGithubOidcForAnthropicToken()` against a mocked `fetch`: success shape, a 401 `authentication_error` response, and confirm no thrown error contains the input JWT
+- [X] T014 [P] Add cases to `tests/unit/config.test.ts`: agent with both `apiKeySecret` and `auth` (rejected), agent with neither (rejected), non-anthropic agent with `auth` (rejected, FR-002), anthropic agent with `auth` only (accepted)
+- [X] T015 [P] Add cases to `tests/unit/providers.test.ts`: `anthropic.ts` sends `x-api-key` when `authScheme` is omitted (regression guard) and `Authorization: Bearer` when `authScheme: "bearer"`
 - [ ] T016 Execute `quickstart.md` end-to-end against a real Anthropic organization with a configured federation rule (constitution Development Workflow gate — required before merging to `main`)
 - [ ] T017 Once T016 passes clean, note this as a MINOR version bump per the constitution's versioning policy (new capability, fully backward compatible) — coordinate the actual `v1.x.0` tag with whatever spec 001 features have landed by then
 

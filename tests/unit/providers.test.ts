@@ -57,6 +57,28 @@ describe("provider adapters — review()", () => {
     expect(usage).toEqual({ inputTokens: 1200, outputTokens: 80 });
   });
 
+  it("anthropic adapter sends x-api-key when authScheme is omitted (apiKeySecret path, spec 001 regression guard)", async () => {
+    const fixture = await loadFixture("anthropic-review-response.json");
+    const fetchMock = mockFetchOnce(fixture);
+
+    await anthropicAdapter.review(baseRequest());
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    expect((init.headers as Record<string, string>)["x-api-key"]).toBe("test-key");
+    expect((init.headers as Record<string, string>).authorization).toBeUndefined();
+  });
+
+  it("anthropic adapter sends Authorization: Bearer when authScheme is \"bearer\" (WIF path, spec 002)", async () => {
+    const fixture = await loadFixture("anthropic-review-response.json");
+    const fetchMock = mockFetchOnce(fixture);
+
+    await anthropicAdapter.review({ ...baseRequest(), apiKey: "sk-ant-oat01-minted", authScheme: "bearer" });
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    expect((init.headers as Record<string, string>).authorization).toBe("Bearer sk-ant-oat01-minted");
+    expect((init.headers as Record<string, string>)["x-api-key"]).toBeUndefined();
+  });
+
   it.each([
     ["openai", openaiAdapter, "https://api.openai.com/v1/chat/completions"],
     ["deepseek", deepseekAdapter, "https://api.deepseek.com/chat/completions"],

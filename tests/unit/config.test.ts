@@ -73,4 +73,45 @@ describe("validateConfig", () => {
   it("allows email delivery to be entirely omitted", () => {
     expect(() => validateConfig(baseConfig(), { knownProviders })).not.toThrow();
   });
+
+  describe("federation (WIF) auth — spec 002", () => {
+    const wifAuth = {
+      type: "wif" as const,
+      federationRuleId: "fdrl_1",
+      organizationId: "org-1",
+      serviceAccountId: "svac_1",
+    };
+
+    it("accepts an anthropic agent using auth instead of apiKeySecret", () => {
+      const config = {
+        version: 1,
+        agents: [
+          { id: "a", provider: "anthropic", model: "claude-sonnet-4-5", auth: wifAuth },
+          { id: "b", provider: "anthropic", model: "claude-sonnet-4-5", apiKeySecret: "B_KEY", role: "aggregator" },
+        ],
+      };
+      expect(() => validateConfig(config, { knownProviders })).not.toThrow();
+    });
+
+    it("rejects an agent declaring both apiKeySecret and auth", () => {
+      const bad = baseConfig();
+      (bad.agents[0] as { auth?: unknown }).auth = wifAuth;
+      expect(() => validateConfig(bad, { knownProviders })).toThrow(/declares both "apiKeySecret" and "auth"/);
+    });
+
+    it("rejects an agent declaring neither apiKeySecret nor auth", () => {
+      const bad = baseConfig();
+      delete (bad.agents[0] as { apiKeySecret?: string }).apiKeySecret;
+      expect(() => validateConfig(bad, { knownProviders })).toThrow(/declares neither "apiKeySecret" nor "auth"/);
+    });
+
+    it("rejects auth on a non-anthropic agent", () => {
+      const bad = baseConfig();
+      delete (bad.agents[1] as { apiKeySecret?: string }).apiKeySecret;
+      (bad.agents[1] as { auth?: unknown }).auth = wifAuth; // agents[1].provider === "openai"
+      expect(() => validateConfig(bad, { knownProviders })).toThrow(
+        /federation auth is only supported for provider "anthropic"/,
+      );
+    });
+  });
 });
