@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "id": "claude-apikey-reviewer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "apiKeySecret": "ANTHROPIC_API_KEY"
+    },
+    {
+      "id": "claude-wif-reviewer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "auth": {
+        "type": "wif",
+        "federationRuleId": "fdrl_...",
+        "organizationId": "00000000-0000-0000-0000-000000000000",
+        "serviceAccountId": "svac_..."
+      }
+    },
+    {
+      "id": "claude-wif-aggregator",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "role": "aggregator",
+      "auth": {
+        "type": "wif",
+        "federationRuleId": "fdrl_...",
+        "organizationId": "00000000-0000-0000-0000-000000000000",
+        "serviceAccountId": "svac_..."
+      }
+    }
+  ],
+  "delivery": {
+    "prComment": { "enabled": true },
+    "email": { "enabled": false }
+  }
+}

@@ -41921,48 +41921,6 @@ function getProvider(key) {
   return adapters.get(key);
 }
 
-// src/lib/federation.ts
-var TOKEN_ENDPOINT = "https://api.anthropic.com/v1/oauth/token";
-var GRANT_TYPE = "urn:ietf:params:oauth:grant-type:jwt-bearer";
-var WIF_AUDIENCE = "https://api.anthropic.com";
-async function exchangeGithubOidcForAnthropicToken(params) {
-  const body = {
-    grant_type: GRANT_TYPE,
-    assertion: params.githubOidcToken,
-    federation_rule_id: params.federationRuleId,
-    organization_id: params.organizationId,
-    service_account_id: params.serviceAccountId
-  };
-  if (params.workspaceId) {
-    body.workspace_id = params.workspaceId;
-  }
-  let response;
-  try {
-    response = await fetch(TOKEN_ENDPOINT, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body)
-    });
-  } catch (err) {
-    throw new Error(
-      `Federation token exchange request failed: ${err instanceof Error ? err.message : String(err)}`
-    );
-  }
-  if (!response.ok) {
-    throw new Error(
-      `Federation token exchange rejected (HTTP ${response.status}). Check the federation rule, organization/service-account IDs, and that the GitHub Actions job has id-token: write.`
-    );
-  }
-  const data = await response.json();
-  if (!data.access_token || typeof data.expires_in !== "number") {
-    throw new Error("Federation token exchange succeeded but the response was missing access_token/expires_in.");
-  }
-  return { accessToken: data.access_token, expiresInSeconds: data.expires_in };
-}
-
-// src/providers/prompts.ts
-var import_ajv = __toESM(require_ajv(), 1);
-
 // src/providers/http.ts
 async function fetchWithTimeout(url, init, timeoutMs) {
   const controller = new AbortController();
@@ -41994,7 +41952,47 @@ function extractJson(text) {
   return JSON.parse(candidate.slice(start, end + 1));
 }
 
+// src/lib/federation.ts
+var TOKEN_ENDPOINT = "https://api.anthropic.com/v1/oauth/token";
+var GRANT_TYPE = "urn:ietf:params:oauth:grant-type:jwt-bearer";
+var EXCHANGE_TIMEOUT_MS = 15e3;
+var WIF_AUDIENCE = "https://api.anthropic.com";
+async function exchangeGithubOidcForAnthropicToken(params) {
+  const body = {
+    grant_type: GRANT_TYPE,
+    assertion: params.githubOidcToken,
+    federation_rule_id: params.federationRuleId,
+    organization_id: params.organizationId,
+    service_account_id: params.serviceAccountId
+  };
+  if (params.workspaceId) {
+    body.workspace_id = params.workspaceId;
+  }
+  let response;
+  try {
+    response = await fetchWithTimeout(
+      TOKEN_ENDPOINT,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      },
+      EXCHANGE_TIMEOUT_MS
+    );
+  } catch (err) {
+    throw new Error(
+      `Federation token exchange failed: ${err instanceof Error ? err.message : String(err)}. Check the federation rule, organization/service-account IDs, and that the GitHub Actions job has id-token: write.`
+    );
+  }
+  const data = await response.json();
+  if (!data.access_token || typeof data.expires_in !== "number") {
+    throw new Error("Federation token exchange succeeded but the response was missing access_token/expires_in.");
+  }
+  return { accessToken: data.access_token, expiresInSeconds: data.expires_in };
+}
+
 // src/providers/prompts.ts
+var import_ajv = __toESM(require_ajv(), 1);
 var ajv = new import_ajv.default({ allErrors: true, strict: true });
 var reviewResponseSchema = {
   type: "object",

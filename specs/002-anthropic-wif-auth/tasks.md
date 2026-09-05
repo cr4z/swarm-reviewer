@@ -71,8 +71,8 @@ agents spanning providers and both auth modes produces one report covering all o
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Add a mixed-auth example to `examples/` (either extend `examples/swarm-reviewer.config.json` or add a sibling file) showing one `apiKeySecret` anthropic agent and one `auth`-based anthropic agent side by side
-- [ ] T011 [US2] Add a "Workload Identity Federation" section to `README.md`: what it is, that it's opt-in per Anthropic agent, a pointer to `specs/002-anthropic-wif-auth/quickstart.md` for full setup, and the `contracts/federation-auth-contract.md` config shape
+- [X] T010 [P] [US2] Add a mixed-auth example to `examples/` (either extend `examples/swarm-reviewer.config.json` or add a sibling file) showing one `apiKeySecret` anthropic agent and one `auth`-based anthropic agent side by side
+- [X] T011 [US2] Add a "Workload Identity Federation" section to `README.md`: what it is, that it's opt-in per Anthropic agent, a pointer to `specs/002-anthropic-wif-auth/quickstart.md` for full setup, and the `contracts/federation-auth-contract.md` config shape
 
 **Checkpoint**: Documentation and an example exist proving mixed-mode composition; no code in this phase — US1's implementation already provides the actual non-breaking guarantee, this phase evidences it.
 
@@ -88,7 +88,7 @@ produces a partial/misleading report.
 
 ### Implementation for User Story 3
 
-- [ ] T012 [US3] Review and harden `actions/run-agent/src/index.ts` and `actions/aggregate/src/index.ts`'s WIF path: confirm `getIDToken()`/exchange failures are caught by the same try/catch that already classifies `AgentResult.status` as `"failed"`/`"timed_out"` (T006/T007), confirm the GitHub JWT and any minted access token are redacted from thrown error messages the same way an `apiKeySecret` value already is, and confirm a missing `id-token: write` permission surfaces `getIDToken()`'s own error text verbatim (it already names the problem) rather than being swallowed (depends on T006, T007)
+- [X] T012 [US3] Review and harden `actions/run-agent/src/index.ts` and `actions/aggregate/src/index.ts`'s WIF path: confirm `getIDToken()`/exchange failures are caught by the same try/catch that already classifies `AgentResult.status` as `"failed"`/`"timed_out"` (T006/T007), confirm the GitHub JWT and any minted access token are redacted from thrown error messages the same way an `apiKeySecret` value already is, and confirm a missing `id-token: write` permission surfaces `getIDToken()`'s own error text verbatim (it already names the problem) rather than being swallowed (depends on T006, T007)
 
 **Checkpoint**: All three user stories independently functional; failure paths verified against quickstart.md's misconfiguration scenarios.
 

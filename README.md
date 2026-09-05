@@ -65,6 +65,37 @@ Full schema: [`specs/001-multi-model-pr-review/contracts/config.schema.json`](sp
 See [`examples/swarm-reviewer.config.json`](examples/swarm-reviewer.config.json) for a
 complete starting point using all four MVP providers.
 
+## Workload Identity Federation (Anthropic agents only)
+
+Any `provider: "anthropic"` agent can authenticate via GitHub's own OIDC identity instead of
+a stored API key — no `ANTHROPIC_API_KEY`-style secret needed for that agent at all. This is
+opt-in and per agent: `apiKeySecret` remains the default, and you can freely mix
+`apiKeySecret` and federation-based Anthropic agents (and agents on any other provider) in
+the same config.
+
+```json
+{
+  "id": "claude-wif-reviewer",
+  "provider": "anthropic",
+  "model": "claude-sonnet-4-5",
+  "auth": {
+    "type": "wif",
+    "federationRuleId": "fdrl_...",
+    "organizationId": "00000000-0000-0000-0000-000000000000",
+    "serviceAccountId": "svac_..."
+  }
+}
+```
+
+One-time setup happens outside this repo, in the Claude Console
+(**Settings → Workload identity → Connect workload → GitHub Actions**) — this workflow
+consumes an existing federation rule, it doesn't create one. See
+[`specs/002-anthropic-wif-auth/quickstart.md`](specs/002-anthropic-wif-auth/quickstart.md) for
+the full walkthrough (including the `pull_request`-trigger subject-claim gotcha) and
+[`contracts/federation-auth-contract.md`](specs/002-anthropic-wif-auth/contracts/federation-auth-contract.md)
+for the exact config shape. A mixed-mode example is in
+[`examples/swarm-reviewer.wif.config.json`](examples/swarm-reviewer.wif.config.json).
+
 ### Built-in providers (v1)
 
 `anthropic` (Claude), `openai` (ChatGPT), `deepseek`, `kimi` (Moonshot AI). Any other

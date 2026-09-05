@@ -5,9 +5,12 @@
 // with this project's no-per-provider-SDK stance (spec 001 research.md #6): this is one
 // simple JSON POST with no signing/crypto, and each run-agent leg is a single short-lived
 // process, so the SDK's caching/refresh loop buys nothing here.
+import { fetchWithTimeout } from "../providers/http.js";
 
 const TOKEN_ENDPOINT = "https://api.anthropic.com/v1/oauth/token";
 const GRANT_TYPE = "urn:ietf:params:oauth:grant-type:jwt-bearer";
+/** The exchange is one small JSON round-trip — never worth the agent's whole timeout budget. */
+const EXCHANGE_TIMEOUT_MS = 15_000;
 
 /** Audience to request the GitHub OIDC token for — Anthropic's documented recommendation. */
 export const WIF_AUDIENCE = "https://api.anthropic.com";
@@ -56,24 +59,22 @@ export async function exchangeGithubOidcForAnthropicToken(
 
   let response: Response;
   try {
-    response = await fetch(TOKEN_ENDPOINT, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  } catch (err) {
-    throw new Error(
-      `Federation token exchange request failed: ${err instanceof Error ? err.message : String(err)}`,
+    response = await fetchWithTimeout(
+      TOKEN_ENDPOINT,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+      EXCHANGE_TIMEOUT_MS,
     );
-  }
-
-  if (!response.ok) {
-    // Every denial is an opaque 401 "Authentication failed" per Anthropic's docs, or a 400
-    // naming a malformed request field — neither case echoes the assertion back, but we still
-    // never forward the raw body verbatim in case that changes.
+  } catch (err) {
+    // fetchWithTimeout's own message already reports the HTTP status/timeout without ever
+    // echoing the request body (which carries the JWT) back — safe to wrap as-is.
     throw new Error(
-      `Federation token exchange rejected (HTTP ${response.status}). Check the federation rule, ` +
-        "organization/service-account IDs, and that the GitHub Actions job has id-token: write.",
+      `Federation token exchange failed: ${err instanceof Error ? err.message : String(err)}. ` +
+        "Check the federation rule, organization/service-account IDs, and that the GitHub " +
+        "Actions job has id-token: write.",
     );
   }
 
