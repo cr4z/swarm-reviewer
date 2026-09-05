@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "id": "claude-reviewer",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "apiKeySecret": "ANTHROPIC_API_KEY"
+    },
+    {
+      "id": "chatgpt-reviewer",
+      "provider": "openai",
+      "model": "gpt-5.1",
+      "apiKeySecret": "OPENAI_API_KEY"
+    },
+    {
+      "id": "deepseek-reviewer",
+      "provider": "deepseek",
+      "model": "deepseek-chat",
+      "apiKeySecret": "DEEPSEEK_API_KEY"
+    },
+    {
+      "id": "kimi-aggregator",
+      "provider": "kimi",
+      "model": "kimi-k2",
+      "apiKeySecret": "KIMI_API_KEY",
+      "role": "aggregator"
+    }
+  ],
+  "delivery": {
+    "prComment": { "enabled": true },
+    "email": {
+      "enabled": true,
+      "recipients": ["you@example.com"],
+      "provider": "resend",
+      "apiKeySecret": "EMAIL_API_KEY"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+name: "Swarm Reviewer - Validate Config"
+description: "Fail-fast validation of the Swarm Reviewer configuration file (FR-011)."
+inputs:
+  config_path:
+    description: "Path to the config file in the consumer repository."
+    required: false
+    default: "swarm-reviewer.config.json"
+  github_token:
+    description: "Token used to read the config file via the Contents API."
+    required: true
+outputs:
+  config_json:
+    description: "The whole validated configuration, as a JSON string."
+  reviewer_agents_json:
+    description: "JSON array of the configured agents with role \"reviewer\" — the matrix source for run-agent (the aggregator is excluded, Principle III)."
+  aggregator_json:
+    description: "JSON object of the single agent with role \"aggregator\"."
+  email_api_key_secret:
+    description: "Name of the secret holding the email provider's API key, or an empty string if email delivery isn't configured/enabled — lets review.yml build `secrets[...]` without inline JSON parsing."
+runs:
+  using: "node20"
+  main: "dist/index.js"

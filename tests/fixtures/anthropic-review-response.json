@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"summary\": \"One nit found.\", \"findings\": [{\"severity\": \"note\", \"file\": \"src/index.ts\", \"line\": 12, \"description\": \"Consider renaming this variable.\"}]}"
+    }
+  ],
+  "usage": { "input_tokens": 1200, "output_tokens": 80 }
+}

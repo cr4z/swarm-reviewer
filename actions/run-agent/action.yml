@@ -1,0 +1,42 @@
+name: "Swarm Reviewer - Run Agent"
+description: "Runs one configured review agent (one matrix leg) against the PR diff (FR-003, FR-004)."
+inputs:
+  agent_json:
+    description: "JSON-encoded ReviewAgentConfig for this matrix leg."
+    required: true
+  api_key:
+    description: "Resolved credential for this agent (from secrets[matrix.agent.apiKeySecret])."
+    required: true
+  config_json:
+    description: "The whole validated configuration (used for diff.maxBytes)."
+    required: true
+  github_token:
+    description: "Token used to fetch the PR diff via the API."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Run agent
+      shell: bash
+      run: node "${{ github.action_path }}/dist/index.js"
+      env:
+        INPUT_AGENT_JSON: ${{ inputs.agent_json }}
+        INPUT_API_KEY: ${{ inputs.api_key }}
+        INPUT_CONFIG_JSON: ${{ inputs.config_json }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+    - name: Upload finding (if the agent succeeded)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: finding-${{ fromJSON(inputs.agent_json).id }}
+        path: swarm-reviewer-out/finding.json
+        if-no-files-found: ignore
+        retention-days: 7
+    - name: Upload agent result (always, even on failure)
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: agent-result-${{ fromJSON(inputs.agent_json).id }}
+        path: swarm-reviewer-out/agent-result.json
+        if-no-files-found: warn
+        retention-days: 7

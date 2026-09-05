@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output (NOT actions/*/dist — those are committed intentionally, Principle V)
+out/
+*.tsbuildinfo
+
+# Test/coverage
+coverage/
+
+# Runtime scratch dirs used by actions/{run-agent,aggregate,deliver} — never committed
+swarm-reviewer-out/
+swarm-reviewer-in/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.local
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
